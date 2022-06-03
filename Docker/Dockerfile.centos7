@@ -1,0 +1,288 @@
+# The ACM_DOCKER_VERSION definition is used by
+# the scripts/gen-docker-image.sh to grab the
+# Dockerfile version
+#
+# See Docker/config/CONTAINER_ENV_VARIABLES for
+# the current value
+#
+# Note:
+#
+# For NODEJS installation, if we go back to
+# Alpine for smaller instances (needed work
+# for Production deployments), we might need
+# to recompile NODE in that environment.
+#
+# https://gdevops.gitlab.io/tuto_javascript/installation/nvm/nvm.html#installing-nvm-on-alpine-linux
+
+# =====================
+# Begin: Pre-Requisites
+# =====================
+
+# Argument for build only (Global across "FROM")
+ARG DEV_BUILD
+ARG API_BASE_URL
+
+# Initial Setup
+FROM centos:7
+
+# Argument for build only ("FROM" section specific)
+ARG DEV_BUILD
+ARG API_BASE_URL
+
+# Exports to runtime
+ENV IDE_BUILD=${DEV_BUILD}
+ENV APP_BUILD=""
+
+ENV TZ=America/Denver
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+# Adds the Endpoint Repository
+RUN yum -y install https://packages.endpointdev.com/rhel/7/os/x86_64/endpoint-repo.x86_64.rpm
+
+# Updates the Git Tools
+RUN yum -y remove git
+RUN yum -y remove git-*
+
+# Update stuff
+RUN yum update -y 
+RUN yum install -y openssl openssl-devel libxml2-devel git \
+    make gmake automake autoconf cmake ninja-build \
+    python3-pytest python3.8 python3-pip virtualenv \
+    python3-jinja2 python3-yaml \
+    yarn curl wget git git-core gnupg nano vim htop unzip \
+    gcc gcc-c++ gdb gcc-base-debuginfo
+
+RUN echo '' >> ~/.bashrc
+RUN echo 'alias python=python3' >> ~/.bashrc
+
+# This enables downloading from the git repository
+RUN yum -y install openssh && \
+    mkdir -p /root/.ssh && \
+    touch /root/.ssh/known_hosts && \
+    ssh-keyscan github.com >> /root/.ssh/known_host
+
+# =====================
+# Begin: NodeJS Section
+# =====================
+#
+# To manage the versions installed of NodeJS
+# we use NVM (Node Version Management) that
+# simplifies switching among versions.
+#
+# However, we encountered an issue where the
+# OpenSSL symbols in the addon are ignored
+# when loaded inside node because the node
+# binary already links OpenSSL statically.
+#
+# To overcome this issue we re-compile node
+# with shared openssl support and select the
+# installed version via 'nvm use ${NODE_VERSION}'
+
+# Node Temp Directory (we use it to save temp)
+# data (e.g., software compilation, etc)
+RUN mkdir /tmp/node
+ENV NODE_TMP /tmp/node
+
+# Node Version Management
+RUN mkdir /usr/local/nvm
+ENV NVM_DIR /usr/local/nvm
+
+# NOTE: The latest version (17.3.0) has some checks that
+#       interfere with the compilation of the addon/ module.
+#       Before upgrading, check out the compatibility of
+#       the node-addon-api compatibility
+#
+#       ENV NODE_VERSION 17.3.0
+#
+# ENV NODE_VERSION 16.13.1
+#
+# UPDATE: In order to be able to run the genSdk inside the
+#         container, we need to install a version supported
+#         by sqlite3 module (see yarnpkg.com/package/sqlite3).
+#
+#         ENV NODE_VERSION 14.19.1 (lts/fermium)
+#         
+ENV NODE_VERSION 14.19.1
+
+# Install nvm with node and npm
+ENV NVM_INST_VER v0.39.1
+ENV NVM_BASE_URL raw.githubusercontent.com/creationix/nvm
+RUN curl https://${NVM_BASE_URL}/${NVM_INST_VER}/install.sh | bash \
+	&& source $NVM_DIR/nvm.sh \
+	&& nvm install $NODE_VERSION \
+	&& nvm alias default $NODE_VERSION \
+	&& nvm use default
+
+# Node Version Management
+ENV NODE_PATH $NVM_DIR/v$NODE_VERSION/lib/node_modules
+ENV PATH      $NVM_DIR/versions/node/v$NODE_VERSION/bin:$PATH
+
+# # NodeJS - Compiled Version
+# #
+# # Here we download NodeJS from GitHub (v16.13.2) and
+# # recompile it with the OQS-enabled version (and Max's patched)
+# # of OpenSSL for PQC support
+
+# # Sets the Node Version
+# ENV NODE_VERSION 16.13.2
+# ENV NODE_TMP_DIR /tmp/node
+
+# # Gets the Source Code
+# RUN DEBIAN_FRONTEND=noninteractive \
+#   curl https://codeload.github.com/nodejs/node/zip/refs/tags/v${NODE_VERSION} \
+#     --output ${NODE_TMP_DIR}/v${NODE_VERSION}.zip 
+
+# # Unzip the Archive
+# RUN DEBIAN_FRONTEND=noninteractive \
+#   unzip -qq -o ${NODE_TMP_DIR}/v${NODE_VERSION}.zip -d ${NODE_TMP_DIR} \
+#   && rm ${NODE_TMP_DIR}/v${NODE_VERSION}.zip
+
+# # Configure and compile
+# RUN DEBIAN_FRONTEND=noninteractive \
+#   cd ${NODE_TMP_DIR}/node-${NODE_VERSION} && \
+#   ./configure --prefix=/usr/local/nvm/versions/node/v${NODE_VERSION} \
+#       --shared-openssl \
+#       --shared-openssl-includes=${DEST_DIR}/include \
+#       --shared-openssl-libpath=${DEST_DIR}/lib \
+#       --shared-openssl-libname=oqs,ssl,crypto
+
+# # Builds and Installs
+# RUN DEBIAN_FRONTEND=noninteractive \
+#   cd ${NODE_TMP_DIR}/node-${NODE_VERSION} \
+#   && make \
+#   && make install
+
+# # Updated Node Versions
+# ENV NODE_VERSION 16.13.2
+# ENV NODE_PATH $NVM_DIR/v$NODE_VERSION/lib/node_modules
+# ENV PATH      $NVM_DIR/versions/node/v$NODE_VERSION/bin:$PATH
+
+# Use NVM to switch to the new version
+RUN DEBIAN_FRONTEND=noninteractive \
+  cd /usr/local/nvm \
+    && \. "$NVM_DIR/nvm.sh" \
+    && \. "$NVM_DIR/bash_completion" \
+    && nvm use v${NODE_VERSION}
+
+# =====================================================================================
+
+# Remove packages that have been proven to be
+# problematic for resolving dependencies in yarn
+# RUN DEBIAN_FRONTEND=noninteractive \
+#     apt-get --yes remove cmdtest yarn
+
+# Remove unused packages
+# RUN DEBIAN_FRONTEND=noninteractive \
+#     apt-get --yes autoremove
+
+# Install Yarn (equiv. to npm)
+RUN npm -g install yarn -y
+
+# Install global dependencies via Yarn
+RUN yarn global add --non-interactive typescript@^3.8.3 \
+      ts-node nodemon mocha openapi-sdk-generator \
+      pm2 nopt node-gyp
+
+# =========================
+# Config: Install Directory
+# =========================
+
+# Install Directory for most components
+ENV DEST_DIR /opt/libpki-pqc
+
+# =========================
+# Begin: LibPKI-PQC Section
+# =========================
+
+# Downloads, compiles, and installs the "MASTER" branch
+# from the openca/libpki repository
+#
+# BRANCH Examples: master, libpki-oqs
+ENV LIBPKI_BRANCH master
+
+# Other LibPKI Variables
+ENV LIBPKI_TMP_DIR /tmp
+ENV LIBPKI_DIR ${LIBPKI_TMP_DIR}/libpki-${LIBPKI_BRANCH}
+ENV LIBPKI_ARCH ${LIBPKI_TMP_DIR}/${LIBPKI_BRANCH}.zip
+ENV LIBPKI_URL https://codeload.github.com/openca/libpki/zip/refs/heads/${LIBPKI_BRANCH}
+
+# Canary Entry to Trigger Re-Compilation
+# RUN DEBIAN_FRONTEND=noninteractive \
+#     echo $$ > /tmp/docker-trigger.pid
+
+# Builds and Installs LibPKI
+RUN curl -s ${LIBPKI_URL} --output ${LIBPKI_ARCH} && \
+    unzip -qq -o ${LIBPKI_ARCH} -d ${LIBPKI_TMP_DIR}
+    
+RUN cd ${LIBPKI_DIR} && \
+    ./configure --prefix=${DEST_DIR} --disable-ldap && \
+    make && make install
+
+RUN DEBIAN_FRONTEND=noninteractive \
+    cd ${DEST_DIR} && \
+    [ -e "lib" ] || ln -s lib64 lib
+
+# Updates the PATH for the build
+RUN echo 'export PATH="${DEST_DIR}/bin:$PATH"' >> ~/.bashrc
+
+# Updates the ENV variable for executing the yarn install
+ENV PATH ${DEST_DIR}/bin:$PATH
+
+# set up persisted workspace
+RUN mkdir -p /workspace
+RUN mkdir -p /workspace/run
+WORKDIR /workspace
+COPY . .
+
+# Specific for Kyrio Configs
+RUN ln -s /opt/kyrio /workspace/run
+
+# cleanup the cache, if any
+RUN yarn cache clean
+
+# Adds the PATH and LD_LIBRARY_PATH
+# to the root's user bashrc
+RUN DEBIAN_FRONTEND=noninteractive \
+  echo >> ~/.bashrc \
+  && echo "export PATH=${DEST_DIR}/bin:$PATH" >> ~/.bashrc \
+  && echo "export LD_LIBRARY_PATH=${DEST_DIR}/lib" >> ~/.bashrc \
+  && echo >> ~/.bashrc
+
+# =======================
+# Begin: Finalize Section
+# =======================
+
+VOLUME /workspace-dev
+
+# add persisted ENVs
+# ENV DB_HOST=mysql
+# ENV DB_PASSWORD=root
+# ENV DB_PORT=3306
+# ENV DB_USER=root
+# ENV NODE_ENV=development
+# ENV REDIS_HOST=redis
+# ENV REDIS_PASS=redis
+# ENV REDIS_PORT=6379
+# ENV API_BASE_URL=${API_BASE_URL}
+
+# ==========
+# Final Note
+# ==========
+
+# In order to be able to run the application
+# inside the container, you will need to log
+# into it and prepare the environment by:
+#
+#   1. Install node dependencies via
+#      'yarn install'
+#
+#   2. Build the addon in the addon folder
+#      'cd addon && yarn install'
+#
+#   3. Run the node application via PM2
+#      'npm run pm2'
+#
+# Enjoy the PQC DEV environment!
+# Dr. Pala <m.pala@cablelabs.com>
+
+CMD ["/bin/bash"]

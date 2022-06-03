@@ -1,0 +1,18 @@
+version: "1.0"
+services:
+  centos7-dev:
+    image: openca.org/dev/centos7:latest
+    ports:
+      - "127.0.0.1:80:8000"
+    volumes:
+      - type: bind
+        source: ../
+        target: /workspace
+    environment:
+      - API_BASE_URL=${API_BASE_URL}
+    stdin_open: true
+    tty: true
+networks:
+  default:
+    external:
+      name: dev-network

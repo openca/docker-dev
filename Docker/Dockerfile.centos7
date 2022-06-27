@@ -50,7 +50,7 @@ RUN yum install -y openssl openssl-devel libxml2-devel git \
     python3-pytest python3.8 python3-pip virtualenv \
     python3-jinja2 python3-yaml \
     yarn curl wget git git-core gnupg nano vim htop unzip \
-    gcc gcc-c++ gdb gcc-base-debuginfo
+    gcc gcc-c++ clang gdb gcc-base-debuginfo
 
 RUN echo '' >> ~/.bashrc
 RUN echo 'alias python=python3' >> ~/.bashrc
@@ -232,7 +232,7 @@ ENV PATH ${DEST_DIR}/bin:$PATH
 RUN mkdir -p /workspace
 RUN mkdir -p /workspace/run
 WORKDIR /workspace
-COPY . .
+# COPY . .
 
 # Specific for Kyrio Configs
 RUN ln -s /opt/kyrio /workspace/run

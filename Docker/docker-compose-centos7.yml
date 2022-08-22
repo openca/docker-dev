@@ -3,7 +3,8 @@ services:
   centos7:
     image: openca.org/dev/centos7:latest
     ports:
-      - "127.0.0.1:80:8000"
+      - "127.0.0.1:3000:3000"
+      - "127.0.0.1:8080:8080"
     volumes:
       - type: bind
         source: ${PWD}

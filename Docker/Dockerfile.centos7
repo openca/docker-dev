@@ -215,7 +215,8 @@ RUN curl -s ${LIBPKI_URL} --output ${LIBPKI_ARCH} && \
     unzip -qq -o ${LIBPKI_ARCH} -d ${LIBPKI_TMP_DIR}
     
 RUN cd ${LIBPKI_DIR} && \
-    ./configure --prefix=${DEST_DIR} --disable-ldap && \
+    ./configure --prefix=${DEST_DIR} --disable-ldap \
+	--disable-composite --disable-oqs && \
     make && make install
 
 RUN DEBIAN_FRONTEND=noninteractive \

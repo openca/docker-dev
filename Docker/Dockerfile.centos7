@@ -37,7 +37,7 @@ ENV TZ=America/Denver
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 # Adds the Endpoint Repository
-RUN yum -y install https://packages.endpointdev.com/rhel/7/os/x86_64/endpoint-repo.x86_64.rpm
+# RUN yum -y install https://packages.endpointdev.com/rhel/7/os/x86_64/endpoint-repo.x86_64.rpm
 
 # Updates the Git Tools
 RUN yum -y remove git
@@ -46,11 +46,11 @@ RUN yum -y remove git-*
 # Update stuff
 RUN yum update -y 
 RUN yum install -y openssl openssl-devel libxml2-devel git \
-    make gmake automake autoconf cmake ninja-build \
+    make gmake automake autoconf cmake3 ninja-build \
     python3-pytest python3.8 python3-pip virtualenv \
     python3-jinja2 python3-yaml \
     yarn curl wget git git-core gnupg nano vim htop unzip \
-    gcc gcc-c++ clang gdb gcc-base-debuginfo
+    gcc gcc-c++ clang gdb lldb gcc-base-debuginfo
 
 RUN echo '' >> ~/.bashrc
 RUN echo 'alias python=python3' >> ~/.bashrc
@@ -179,7 +179,7 @@ RUN DEBIAN_FRONTEND=noninteractive \
 RUN npm -g install yarn -y
 
 # Install global dependencies via Yarn
-RUN yarn global add --non-interactive typescript@^3.8.3 \
+RUN yarn global add --non-interactive typescript@^4.6.4 \
       ts-node nodemon mocha openapi-sdk-generator \
       pm2 nopt node-gyp
 
@@ -194,34 +194,67 @@ ENV DEST_DIR /opt/libpki-pqc
 # Begin: LibPKI-PQC Section
 # =========================
 
-# Downloads, compiles, and installs the "MASTER" branch
-# from the openca/libpki repository
-#
-# BRANCH Examples: master, libpki-oqs
-ENV LIBPKI_BRANCH master
+# # Install Directory for most components
+ENV DEST_DIR /opt/libpki-pqc
 
-# Other LibPKI Variables
-ENV LIBPKI_TMP_DIR /tmp
-ENV LIBPKI_DIR ${LIBPKI_TMP_DIR}/libpki-${LIBPKI_BRANCH}
-ENV LIBPKI_ARCH ${LIBPKI_TMP_DIR}/${LIBPKI_BRANCH}.zip
-ENV LIBPKI_URL https://codeload.github.com/openca/libpki/zip/refs/heads/${LIBPKI_BRANCH}
+# Git Repo Setup Variables
+ENV LIBPKI_TMP_DIR              /tmp
+ENV LIBPKI_PQC_ARCH             zip
+ENV LIBPKI_PQC_BRANCH           main
+ENV LIBPKI_PQC_REPO             libpki-pqc
+ENV LIBPKI_PQC_GITHUB_BASE_URL  https://codeload.github.com/opencrypto
 
-# Canary Entry to Trigger Re-Compilation
-# RUN DEBIAN_FRONTEND=noninteractive \
-#     echo $$ > /tmp/docker-trigger.pid
+# Git Download Variables
+ENV LIBPKI_PQC_DIR              ${LIBPKI_TMP_DIR}/${LIBPKI_PQC_REPO}-${LIBPKI_PQC_BRANCH}
+ENV LIBPKI_PQC_URL              ${LIBPKI_PQC_GITHUB_BASE_URL}/${LIBPKI_PQC_REPO}/${LIBPKI_PQC_ARCH}/refs/heads/${LIBPKI_PQC_BRANCH}
+ENV LIBPKI_PQC_ARCH_FILE        ${LIBPKI_TMP_DIR}/${LIBPKI_PQC_REPO}-${LIBPKI_PQC_BRANCH}.${LIBPKI_PQC_ARCH}
 
-# Builds and Installs LibPKI
-RUN curl -s ${LIBPKI_URL} --output ${LIBPKI_ARCH} && \
-    unzip -qq -o ${LIBPKI_ARCH} -d ${LIBPKI_TMP_DIR}
-    
-RUN cd ${LIBPKI_DIR} && \
-    ./configure --prefix=${DEST_DIR} --disable-ldap \
-	--disable-composite --disable-oqs && \
-    make && make install
+# # Alternatively you can use the helper script build-debug.sh
+# # instead of the usual ./build.sh
+ENV BUILD_SCRIPT ./build.sh
 
+# # Installs All Components
 RUN DEBIAN_FRONTEND=noninteractive \
-    cd ${DEST_DIR} && \
-    [ -e "lib" ] || ln -s lib64 lib
+    curl -s ${LIBPKI_PQC_URL} --output ${LIBPKI_PQC_ARCH_FILE} && \
+    unzip -qq -o ${LIBPKI_PQC_ARCH_FILE} -d ${LIBPKI_TMP_DIR} && \
+    cd ${LIBPKI_PQC_DIR} && ${BUILD_SCRIPT}
+
+# =======================
+# End: LibPKI-PQC Section
+# =======================
+
+# # =========================
+# # Begin: LibPKI-PQC Section
+# # =========================
+
+# # Downloads, compiles, and installs the "MASTER" branch
+# # from the openca/libpki repository
+# #
+# # BRANCH Examples: master, libpki-oqs
+# ENV LIBPKI_BRANCH master
+
+# # Other LibPKI Variables
+# ENV LIBPKI_TMP_DIR /tmp
+# ENV LIBPKI_DIR ${LIBPKI_TMP_DIR}/libpki-${LIBPKI_BRANCH}
+# ENV LIBPKI_ARCH ${LIBPKI_TMP_DIR}/${LIBPKI_BRANCH}.zip
+# ENV LIBPKI_URL https://codeload.github.com/openca/libpki/zip/refs/heads/${LIBPKI_BRANCH}
+
+# # Canary Entry to Trigger Re-Compilation
+# # RUN DEBIAN_FRONTEND=noninteractive \
+# #     echo $$ > /tmp/docker-trigger.pid
+
+# # Builds and Installs LibPKI
+# RUN curl -s ${LIBPKI_URL} --output ${LIBPKI_ARCH} && \
+#     unzip -qq -o ${LIBPKI_ARCH} -d ${LIBPKI_TMP_DIR}
+    
+# RUN cd ${LIBPKI_DIR} && \
+#     ./configure --prefix=${DEST_DIR} --disable-ldap \
+# 	--disable-composite --disable-oqs && \
+#     make && make install
+
+# RUN DEBIAN_FRONTEND=noninteractive \
+#     cd ${DEST_DIR} && \
+#     [ -e "lib" ] || ln -s lib64 lib
 
 # Updates the PATH for the build
 RUN echo 'export PATH="${DEST_DIR}/bin:$PATH"' >> ~/.bashrc
@@ -231,12 +264,11 @@ ENV PATH ${DEST_DIR}/bin:$PATH
 
 # set up persisted workspace
 RUN mkdir -p /workspace
-RUN mkdir -p /workspace/run
 WORKDIR /workspace
 # COPY . .
 
 # Specific for Kyrio Configs
-RUN ln -s /opt/kyrio /workspace/run
+# RUN ln -s /opt/kyrio /workspace/run
 
 # cleanup the cache, if any
 RUN yarn cache clean
@@ -253,7 +285,7 @@ RUN DEBIAN_FRONTEND=noninteractive \
 # Begin: Finalize Section
 # =======================
 
-VOLUME /workspace-dev
+# VOLUME /workspace-dev
 
 # add persisted ENVs
 # ENV DB_HOST=mysql

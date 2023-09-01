@@ -1,5 +1,7 @@
 #!/bin/bash
 
+DEB_BUILD=3
+
 echo "Docker Build Script - v1.0.0"
 echo "(c) Massimiliano Pala and OpenCA Labs"
 echo "All Rights Reserved"
@@ -8,7 +10,7 @@ echo
 if [ "$1" = "" ] ; then
   echo "ERROR: Missing required parameter (image name)"
   echo
-  echo "    USAGE: $0 [ centos7 | ubuntu20 ] [ y | n ] [ no-cache ]"
+  echo "    USAGE: $0 [ centos7 | ubuntu22 ] [ y | n ] [ no-cache ]"
   echo
   echo "Where the first argument is the image name. Use 'y' as the second argument"
   echo "to force the pushing of the image to the official repository on CodeLab."
@@ -28,26 +30,30 @@ fi
 
 # TODAY's DATE
 TODAY=$(date +%Y%m%d)
-DOCKER_CONFIG_FILE=$PWD/Docker/ENV_VARIABLES
 
-DOCKER_FILE=Docker/Dockerfile.$1
-DOCKER_VERSION=$(grep 'DOCKER_IMAGE_VERSION.*=.*' $DOCKER_CONFIG_FILE | \
-	sed -E 's|[[:space:]]*DOCKER_IMAGE_VERSION[[:space:]]*=[[:space:]]*||' | \
-	sed -E 's|[[:space:]]*||')
+# TAGS
+export TAG_BASE_URL=openca.org
 
-export TAG_BASE_URL=openca.org/dev
-export TAG_IMAGE_VERSION=$TAG_BASE_URL/$1:${DOCKER_VERSION}
-
+# Input Parameter Checks
 case "$1" in
+
   centos7)
     export DOCKER_FILE="Docker/Dockerfile.$1"
-    export OPTS="--build-arg API_BASE_URL=https://gateway:8066"
-    export TAG_IMAGE_LATEST=$TAG_BASE_URL/$1:latest
+    export OPTS="--build-arg DEV_BUILD=${DEV_BUILD}"
+    export TAG_IMAGE_LATEST=$TAG_BASE_URL/centos:latest
+    export TAG_IMAGE_VERSION=$TAG_BASE_URL/centos:7
+    ;;
+  
+  ubuntu22)
+    export DOCKER_FILE="Docker/Dockerfile.$1"
+    export OPTS="--build-arg DEV_BUILD=${DEV_BUILD}"
+    export TAG_IMAGE_LATEST=$TAG_BASE_URL/ubuntu:latest
+    export TAG_IMAGE_VERSION=$TAG_BASE_URL/ubuntu:22.04
     ;;
 
   *)
      echo "ERROR: please use one of the allowed names for the image:"
-     echo "       (i.e., one of 'centos7') "
+     echo "       (i.e., one of 'centos7', 'ubuntu22') "
      echo
      exit 0
      ;;

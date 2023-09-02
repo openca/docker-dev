@@ -1,7 +1,7 @@
 version: "1.0"
 services:
-  ubuntu22:
-    image: openca.org/ubuntu:latest
+  ubuntu22-libpki-oqs:
+    image: openca.org/ubuntu:latest-libpki-oqs
     ports:
       - "127.0.0.1:6001:6001"
     volumes:
@@ -15,3 +15,4 @@ services:
 networks:
   default:
     name: dev-network
+    external: true

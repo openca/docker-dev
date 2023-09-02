@@ -1,0 +1,18 @@
+version: "1.0"
+services:
+  ubuntu22-base-oqs:
+    image: openca.org/ubuntu:latest-base-oqs
+    ports:
+      - "127.0.0.1:6001:6001"
+    volumes:
+      - type: bind
+        source: ${PWD}
+        target: /workspace
+    environment:
+      - API_BASE_URL=${API_BASE_URL}
+    stdin_open: true
+    tty: true
+networks:
+  default:
+    name: dev-network
+    external: true

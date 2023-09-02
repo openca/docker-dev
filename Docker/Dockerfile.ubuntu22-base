@@ -20,8 +20,8 @@ FROM ubuntu:22.04
 ARG DEV_BUILD
 
 # Sets the ENV variables for OpenSSL compilation
-ARG LC_CTYPE   en_US.UTF-8
-ARG LC_ALL     en_US.UTF-8
+# ENV LC_CTYPE            en_US.UTF-8
+ARG LC_ALL     C
 
 # Exports to runtime
 ENV IDE_BUILD=${DEV_BUILD}
@@ -56,8 +56,8 @@ RUN pip install tabulate
 # Begin: LibPKI-PQC Section
 # =========================
 
-# # Install Directory for most components
-ENV DEST_DIR /opt/libpki-pqc
+# Install Directory for most components
+ENV DEST_DIR /opt/libpki-ossl3
 
 # Git Repo Setup Variables
 ENV LIBPKI_TMP_DIR              /tmp
@@ -71,11 +71,11 @@ ENV LIBPKI_PQC_DIR              ${LIBPKI_TMP_DIR}/${LIBPKI_PQC_REPO}-${LIBPKI_PQ
 ENV LIBPKI_PQC_URL              ${LIBPKI_PQC_GITHUB_BASE_URL}/${LIBPKI_PQC_REPO}/${LIBPKI_PQC_ARCH}/refs/heads/${LIBPKI_PQC_BRANCH}
 ENV LIBPKI_PQC_ARCH_FILE        ${LIBPKI_TMP_DIR}/${LIBPKI_PQC_REPO}-${LIBPKI_PQC_BRANCH}.${LIBPKI_PQC_ARCH}
 
-# # Alternatively you can use the helper script build-debug.sh
-# # instead of the usual ./build.sh
-ENV BUILD_SCRIPT ./build.sh
+# Alternatively you can use the helper script build-debug.sh
+# instead of the usual ./build.sh
+ENV BUILD_SCRIPT ./build-debug.sh
 
-# # Installs All Components
+# Installs All Components
 RUN DEBIAN_FRONTEND=noninteractive \
     curl -s ${LIBPKI_PQC_URL} --output ${LIBPKI_PQC_ARCH_FILE} && \
     unzip -qq -o ${LIBPKI_PQC_ARCH_FILE} -d ${LIBPKI_TMP_DIR}
@@ -88,9 +88,6 @@ RUN DEBIAN_FRONTEND=noninteractive \
 
 RUN DEBIAN_FRONTEND=noninteractive \
     cd ${LIBPKI_PQC_DIR} && ${BUILD_SCRIPT} "" "" "oqsprovider"
-
-RUN DEBIAN_FRONTEND=noninteractive \
-    cd ${LIBPKI_PQC_DIR} && ${BUILD_SCRIPT} "" "" "libpki"
 
 # =====================
 # Begin: NodeJS Section
@@ -241,10 +238,6 @@ RUN DEBIAN_FRONTEND=noninteractive \
   && echo "export PATH=${DEST_DIR}/bin:$PATH" >> ~/.bashrc \
   && echo "export LD_LIBRARY_PATH=${DEST_DIR}/lib" >> ~/.bashrc \
   && echo >> ~/.bashrc
-
-# Environment
-ENV LC_CTYPE            en_US.UTF-8
-ENV LC_ALL              en_US.UTF-8
 
 # Environment
 ENV NODE_ENV            development

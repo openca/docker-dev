@@ -20,7 +20,7 @@ command:
 
   $ scripts/docker-gen-image.sh <type> [ y | n ] [no-cache]
 
-where the type is 'centos7' (uses the Docker/Dockerfile.centos7) and
+where the type is 'ubuntu22-base' (uses the Docker/Dockerfile.ubuntu22-base.yml) and
 the second argument is for pushing (y/n) the image to the repo after
 creation. The last argument 'no-cache' is used to generate the image
 from scratch (no cache).

@@ -244,7 +244,7 @@ ENV NODE_ENV            development
 
 # Copies the OQS-enabled openssl config
 RUN mkdir -p ${DEST_DIR}/ssl
-COPY /workspace/openssl.conf /opt/libpki-ossl3/ssl
+ADD openssl.cnf ${DEST_DIR}/ssl
 
 # ==========
 # Final Note

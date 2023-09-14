@@ -4,10 +4,9 @@
 
 all: ubuntu22/base ubuntu22/libpki
 
-ubuntu22:
-ubuntu22/base:
+ubuntu22/base::
 	@bin/docker-gen-image.sh ubuntu22-base
 
-ubuntu22/libpki:
+ubuntu22/libpki::
 	@bin/docker-gen-image.sh ubuntu22-libpki
 

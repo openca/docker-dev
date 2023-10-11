@@ -214,6 +214,17 @@ RUN DEBIAN_FRONTEND=noninteractive \
       ts-node nodemon mocha openapi-sdk-generator \
       pm2 nopt node-gyp
 
+# ==================
+# Begin: C/Dev Tools
+# ==================
+
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    cppcheck clang-tidy clang-tools
+
+# =======================
+# End: Finalize Section
+# =======================
+
 # =======================
 # Begin: Finalize Section
 # =======================

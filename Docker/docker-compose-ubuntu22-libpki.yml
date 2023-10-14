@@ -3,16 +3,12 @@ services:
   ubuntu22-libpki-oqs:
     image: openca.org/ubuntu:latest-libpki-oqs
     ports:
-      - "127.0.0.1:6001:6001"
+      - "127.0.0.1:9000:9000"
     volumes:
       - type: bind
         source: ${PWD}
         target: /workspace
     environment:
-      - API_BASE_URL=${API_BASE_URL}
+      - API_BASE_URL=http://127.0.0.1:9000
     stdin_open: true
     tty: true
-networks:
-  default:
-    name: dev-network
-    external: true

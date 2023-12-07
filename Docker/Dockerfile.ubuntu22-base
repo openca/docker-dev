@@ -122,7 +122,7 @@ ENV NVM_DIR /usr/local/nvm
 #
 #       ENV NODE_VERSION 17.3.0
 #
-# ENV NODE_VERSION 16.13.1
+# ENV NODE_VERSION 16.14.0
 #
 # UPDATE: In order to be able to run the genSdk inside the
 #         container, we need to install a version supported
@@ -130,7 +130,8 @@ ENV NVM_DIR /usr/local/nvm
 #
 #         ENV NODE_VERSION 14.19.1 (lts/fermium)
 #         
-ENV NODE_COMPILED_VERSION 14.19.1
+# ENV NODE_COMPILED_VERSION 14.19.1
+ENV NODE_COMPILED_VERSION 16.14.0
 
 # Install nvm with node and npm
 ENV NVM_INST_VER v0.39.1
@@ -210,7 +211,7 @@ RUN DEBIAN_FRONTEND=noninteractive \
 
 # Install global dependencies via Yarn
 RUN DEBIAN_FRONTEND=noninteractive \
-    yarn global add --non-interactive typescript@^4.6.4 \
+    yarn global add --non-interactive typescript \
       ts-node nodemon mocha openapi-sdk-generator \
       pm2 nopt node-gyp
 

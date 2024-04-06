@@ -86,7 +86,7 @@ fi
 
 # Pushes the image to the cablelabs repo, if requested
 if [ "${PUSH_IMAGE}" = "yes" ] ; then
-  docker login code.cablelabs.com:4567 && \
+  docker login code.github.com:4567 && \
     docker push ${TAG_IMAGE_LATEST} && \
     docker push ${TAG_IMAGE_VERSION}
 fi

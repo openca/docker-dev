@@ -10,7 +10,7 @@ echo
 if [ "$1" = "" ] ; then
   echo "ERROR: Missing required parameter (image name)"
   echo
-  echo "    USAGE: $0 [ centos7 | ubuntu22-base | ubuntu22-libpki ] [ y | n ] [ no-cache ]"
+  echo "    USAGE: $0 [ centos7 | ubuntu24 | ubuntu22-base | ubuntu22-libpki ] [ y | n ] [ no-cache ]"
   echo
   echo "Where the first argument is the image name. Use 'y' as the second argument"
   echo "to force the pushing of the image to the official repository on CodeLab."
@@ -44,6 +44,20 @@ case "$1" in
     export TAG_IMAGE_VERSION=$TAG_BASE_URL/centos:7
     ;;
   
+  ubuntu24)
+    export DOCKER_FILE="Docker/Dockerfile.$1"
+    export OPTS="--build-arg DEV_BUILD=${DEV_BUILD}"
+    export TAG_IMAGE_LATEST=$TAG_BASE_URL/$1:latest
+    export TAG_IMAGE_VERSION=$TAG_BASE_URL/$1:$(date +%Y%m%d)
+    ;;
+
+  ubuntu24-oqs)
+    export DOCKER_FILE="Docker/Dockerfile.$1"
+    export OPTS="--build-arg DEV_BUILD=${DEV_BUILD}"
+    export TAG_IMAGE_LATEST=$TAG_BASE_URL/$1:latest
+    export TAG_IMAGE_VERSION=$TAG_BASE_URL/$1:$(date +%Y%m%d)
+    ;;
+
   ubuntu22-base)
     export DOCKER_FILE="Docker/Dockerfile.$1"
     export OPTS="--build-arg DEV_BUILD=${DEV_BUILD}"

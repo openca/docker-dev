@@ -1,0 +1,268 @@
+# The DOCKER_IMAGE_VERSION definition is used by
+# the scripts/gen-docker-image.sh to grab the
+# Dockerfile version
+#
+# See Docker/config/CONTAINER_ENV_VARIABLES for
+# the current value
+
+
+# =====================
+# Begin: Pre-Requisites
+# =====================
+
+# Argument for build only (Global across "FROM")
+ARG DEV_BUILD
+
+# Initial Setup
+FROM ubuntu:24.04
+
+# Argument for build only ("FROM" section specific)
+ARG DEV_BUILD
+
+# Sets the ENV variables for OpenSSL compilation
+# ENV LC_CTYPE            en_US.UTF-8
+ARG LC_ALL     C
+
+# Exports to runtime
+ENV IDE_BUILD=${DEV_BUILD}
+
+# Update stuff
+RUN DEBIAN_FRONTEND=noninteractive apt-get update --fix-missing
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    build-essential checkinstall libssl-dev \
+    yarn curl wget git gnupg nano vim htop unzip \
+    default-mysql-client unzip automake autoconf \
+    libxml2-dev virtualenv python3 python3-pip python3-tabulate \
+    cmake ninja-build python3-pytest python3-pytest-xdist \
+    python3-jinja2 python3-yaml apt-utils \
+    apt-transport-https curl wget uuid-dev \
+    git git-secrets git-crypt git-repair git-review git-revise \
+    bind9-dnsutils netcat-traditional arping 2ping ssh \
+    gcc gdb lldb clang
+
+RUN echo '' >> ~/.bashrc
+RUN echo 'alias python=python3' >> ~/.bashrc
+
+# This enables downloading from the git repository
+RUN apt-get -y install ssh && \
+    mkdir -p /root/.ssh && \
+    touch /root/.ssh/known_hosts && \
+    ssh-keyscan github.com >> /root/.ssh/known_host
+
+# Install dependency for LibOQS template generation
+# RUN apt-get -y install python3-tabulate
+
+# =========================
+# Begin: LibPKI-PQC Section
+# =========================
+
+# # Install Directory for most components
+# ENV DEST_DIR=/opt/libpki-ossl3
+
+# # Git Repo Setup Variables
+# ENV LIBPKI_TMP_DIR=/tmp
+# ENV LIBPKI_PQC_ARCH=zip
+# ENV LIBPKI_PQC_BRANCH=main
+# ENV LIBPKI_PQC_REPO=libpki-pqc
+# ENV LIBPKI_PQC_GITHUB_BASE_URL=https://codeload.github.com/opencrypto
+
+# # Git Download Variables
+# ENV LIBPKI_PQC_DIR=${LIBPKI_TMP_DIR}/${LIBPKI_PQC_REPO}-${LIBPKI_PQC_BRANCH}
+# ENV LIBPKI_PQC_URL=${LIBPKI_PQC_GITHUB_BASE_URL}/${LIBPKI_PQC_REPO}/${LIBPKI_PQC_ARCH}/refs/heads/${LIBPKI_PQC_BRANCH}
+# ENV LIBPKI_PQC_ARCH_FILE=${LIBPKI_TMP_DIR}/${LIBPKI_PQC_REPO}-${LIBPKI_PQC_BRANCH}.${LIBPKI_PQC_ARCH}
+
+# # Alternatively you can use the helper script build-debug.sh
+# # instead of the usual ./build.sh
+# ENV BUILD_SCRIPT ./build-debug.sh
+
+# # Installs All Components
+# RUN DEBIAN_FRONTEND=noninteractive \
+#     curl -s ${LIBPKI_PQC_URL} --output ${LIBPKI_PQC_ARCH_FILE} && \
+#     unzip -qq -o ${LIBPKI_PQC_ARCH_FILE} -d ${LIBPKI_TMP_DIR}
+
+# RUN DEBIAN_FRONTEND=noninteractive \
+#     cd ${LIBPKI_PQC_DIR} && ${BUILD_SCRIPT} "" "" "liboqs"
+
+# RUN DEBIAN_FRONTEND=noninteractive \
+#     cd ${LIBPKI_PQC_DIR} && ${BUILD_SCRIPT} "" "" "openssl"
+
+# RUN DEBIAN_FRONTEND=noninteractive \
+#     cd ${LIBPKI_PQC_DIR} && ${BUILD_SCRIPT} "" "" "oqsprovider"
+
+# # =====================
+# # Begin: NodeJS Section
+# # =====================
+# #
+# # To manage the versions installed of NodeJS
+# # we use NVM (Node Version Management) that
+# # simplifies switching among versions.
+# #
+# # However, we encountered an issue where the
+# # OpenSSL symbols in the addon are ignored
+# # when loaded inside node because the node
+# # binary already links OpenSSL statically.
+# #
+# # To overcome this issue we re-compile node
+# # with shared openssl support and select the
+# # installed version via 'nvm use ${NODE_VERSION}'
+
+# # Node Temp Directory (we use it to save temp)
+# # data (e.g., software compilation, etc)
+# RUN mkdir /tmp/node
+# ENV NODE_TMP /tmp/node
+
+# # Node Version Management
+# RUN mkdir /usr/local/nvm
+# ENV NVM_DIR /usr/local/nvm
+
+# # NOTE: The latest version (17.3.0) has some checks that
+# #       interfere with the compilation of the addon/ module.
+# #       Before upgrading, check out the compatibility of
+# #       the node-addon-api compatibility
+# #
+# #       ENV NODE_VERSION 17.3.0
+# #
+# # ENV NODE_VERSION 16.14.0
+# #
+# # UPDATE: In order to be able to run the genSdk inside the
+# #         container, we need to install a version supported
+# #         by sqlite3 module (see yarnpkg.com/package/sqlite3).
+# #
+# #         ENV NODE_VERSION 14.19.1 (lts/fermium)
+# #         
+# # ENV NODE_COMPILED_VERSION 14.19.1
+# ENV NODE_COMPILED_VERSION 16.14.0
+
+# # Install nvm with node and npm
+# ENV NVM_INST_VER v0.39.1
+# ENV NVM_BASE_URL raw.githubusercontent.com/creationix/nvm
+# RUN curl https://${NVM_BASE_URL}/${NVM_INST_VER}/install.sh | bash \
+# 	&& . $NVM_DIR/nvm.sh \
+# 	&& nvm install $NODE_COMPILED_VERSION \
+# 	&& nvm alias default $NODE_COMPILED_VERSION \
+# 	&& nvm use default
+
+# # Stores the OLD PATH
+# ENV OLD_PATH  ${PATH}
+
+# # Node Version Management
+# ENV NODE_PATH $NVM_DIR/v$NODE_COMPILED_VERSION/lib/node_modules
+# ENV PATH      $NVM_DIR/versions/node/v$NODE_COMPILED_VERSION/bin:$PATH
+
+# # Use NVM to switch to the new version
+# RUN DEBIAN_FRONTEND=noninteractive \
+#   cd /usr/local/nvm \
+#     && \. "$NVM_DIR/nvm.sh" \
+#     && \. "$NVM_DIR/bash_completion" \
+#     && nvm use v${NODE_COMPILED_VERSION}
+
+# # # NodeJS - Compiled Version
+# # #
+# # # Here we download NodeJS from GitHub (v16.13.2) and
+# # # recompile it with the OQS-enabled version (and Max's patched)
+# # # of OpenSSL for PQC support
+
+# # # Sets the Node Version
+# # ENV NODE_VERSION 16.13.2
+# # ENV NODE_TMP_DIR /tmp/node
+
+# # # Gets the Source Code
+# # RUN DEBIAN_FRONTEND=noninteractive \
+# #   curl https://codeload.github.com/nodejs/node/zip/refs/tags/v${NODE_VERSION} \
+# #     --output ${NODE_TMP_DIR}/v${NODE_VERSION}.zip 
+
+# # # Unzip the Archive, configure and compile
+# # RUN DEBIAN_FRONTEND=noninteractive \
+# #   unzip -qq -o ${NODE_TMP_DIR}/v${NODE_VERSION}.zip -d ${NODE_TMP_DIR} \
+# #   && rm ${NODE_TMP_DIR}/v${NODE_VERSION}.zip \
+# #   && cd ${NODE_TMP_DIR}/node-${NODE_VERSION} \
+# #   &&  ./configure --prefix=/usr/local/nvm/versions/node/v${NODE_VERSION} \
+# #           --shared-openssl \
+# #           --shared-openssl-includes=${DEST_DIR}/include \
+# #           --shared-openssl-libpath=${DEST_DIR}/lib \
+# #           --shared-openssl-libname=oqs,ssl,crypto \
+# #   && make \
+# #   && make install
+
+# # # Node Version Management
+# # ENV NODE_PATH $NVM_DIR/v$NODE_VERSION/lib/node_modules
+# # ENV PATH      $NVM_DIR/versions/node/v$NODE_VERSION/bin:$OLD_PATH
+
+# # # Use NVM to switch to the new version
+# # RUN DEBIAN_FRONTEND=noninteractive \
+# #   cd /usr/local/nvm \
+# #     && \. "$NVM_DIR/nvm.sh" \
+# #     && \. "$NVM_DIR/bash_completion" \
+# #     && nvm alias default $NODE_VERSION \
+# # 	&& nvm use default
+
+# # Remove packages that have been proven to be
+# # problematic for resolving dependencies in yarn
+# RUN DEBIAN_FRONTEND=noninteractive \
+#     apt-get --yes remove cmdtest yarn
+
+# # Remove unused packages
+# RUN DEBIAN_FRONTEND=noninteractive \
+#     apt-get --yes autoremove
+
+# # Install Yarn (equiv. to npm)
+# RUN DEBIAN_FRONTEND=noninteractive \
+#     npm -g install yarn -y
+
+# # Install global dependencies via Yarn
+# RUN DEBIAN_FRONTEND=noninteractive \
+#     yarn global add --non-interactive typescript \
+#       ts-node nodemon mocha openapi-sdk-generator \
+#       pm2 nopt node-gyp
+
+# # cleanup the cache, if any
+# RUN yarn cache clean
+
+# ==================
+# Begin: C/Dev Tools
+# ==================
+
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    cppcheck clang-tidy clang-tools
+
+# =======================
+# End: Finalize Section
+# =======================
+
+# =======================
+# Begin: Finalize Section
+# =======================
+
+# # Updates the PATH for the build
+# RUN echo 'export PATH="${DEST_DIR}/bin:$PATH"' >> ~/.bashrc
+
+# # Updates the ENV variable for executing the yarn install
+# ENV PATH ${DEST_DIR}/bin:$PATH
+
+# set up persisted workspace
+RUN mkdir -p /workspace
+WORKDIR /workspace
+
+# # Adds the PATH and LD_LIBRARY_PATH
+# # to the root's user bashrc
+# RUN DEBIAN_FRONTEND=noninteractive \
+#   echo >> ~/.bashrc \
+#   && echo "export PATH=${DEST_DIR}/bin:$PATH" >> ~/.bashrc \
+#   && echo "export LD_LIBRARY_PATH=${DEST_DIR}/lib" >> ~/.bashrc \
+#   && echo >> ~/.bashrc
+
+# Environment
+ENV NODE_ENV=development
+
+# # Copies the OQS-enabled openssl config
+# RUN mkdir -p ${DEST_DIR}/ssl
+# ADD openssl.cnf ${DEST_DIR}/ssl
+
+# ==========
+# Final Note
+# ==========
+
+# Enjoy the PQC DEV environment!
+# Dr. Pala <director@openca.org>
+
+CMD ["/bin/bash"]

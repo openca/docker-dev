@@ -4,11 +4,21 @@
 
 all:
 	@echo
-	@echo "    Usage: make [ ubuntu | ubuntu22/base | ubuntu22/libpki ]"
+	@echo "    Usage: make [ ubuntu | ubuntu24 | ubuntu22/base | ubuntu22/libpki ]"
 	@echo
 	@exit 1
 
 ubuntu: ubuntu22/base ubuntu22/libpki
+
+ubuntu24::
+	@bin/docker-gen-image.sh ubuntu24
+	@mkdir -p ~/.dockercompose && \
+	 cp Docker/docker-compose-ubuntu24.yml ~/.dockercompose/
+
+ubuntu24/oqs::
+	@bin/docker-gen-image.sh ubuntu24-oqs
+	@mkdir -p ~/.dockercompose && \
+	 cp Docker/docker-compose-ubuntu24-oqs.yml ~/.dockercompose/
 
 ubuntu22/base::
 	@bin/docker-gen-image.sh ubuntu22-base

@@ -1,0 +1,13 @@
+services:
+  ubuntu24-libpki:
+    image: openca.org/ubuntu24-libpki:latest
+    ports:
+      - "127.0.0.1:9000:9000"
+    volumes:
+      - type: bind
+        source: ${PWD}
+        target: /workspace
+    environment:
+      - API_BASE_URL=http://127.0.0.1:9000
+    stdin_open: true
+    tty: true

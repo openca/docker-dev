@@ -34,33 +34,11 @@ ENV PRJ_DEST_DIR=/opt/pqc
 # Pre-Requisites Installation
 # ===========================
 
-# Prerequisites
 RUN DEBIAN_FRONTEND=noninteractive \
     apt-get --yes install astyle cmake gcc \
-    ninja-build libssl-dev \
-    python3-pytest python3-pytest-xdist \
-    unzip xsltproc \
-    doxygen graphviz python3-yaml \
-    valgrind
-
-# ============
-# OpenSSL 3.2+
-# ============
-
-# v3.2+ is needed for TLS and CMS support
-
-ENV OPENSSL_BUILD_OPTIONS="\
-    --prefix=${PRJ_DEST_DIR} -d -shared -no-asm \
-    -g3 -ggdb -gdwarf-4 -fno-inline -O0 \
-    -fno-omit-frame-pointer"
-
-# Install OpenSSL
-RUN DEBIAN_FRONTEND=noninteractive \
-    curl https://codeload.github.com/openssl/openssl/zip/refs/heads/master --output "openssl-master.zip" && \
-    unzip -q openssl-master.zip && \
-    cd openssl-master && \
-    ./config ${OPENSSL_BUILD_OPTIONS} && \
-    make build_libs && make install_sw
+    ninja-build libssl-dev python3-pytest python3-pytest-xdist \
+    unzip xsltproc doxygen graphviz python3-yaml valgrind \
+    gdb gdb-doc gdb-x86-64* gdb-i686* 
 
 # ======
 # LibOQS
@@ -83,6 +61,22 @@ RUN DEBIAN_FRONTEND=noninteractive \
     cmake ${OQS_BUILD_OPTIONS} -GNinja .. && \
     ninja && \
     ninja install
+
+# ============
+# OpenSSL 3.2+
+# ============
+
+ENV OPENSSL_BUILD_OPTIONS="\
+    --prefix=${PRJ_DEST_DIR} -d -shared -no-asm \
+    -g3 -ggdb -gdwarf-4 -fno-inline -O0 \
+    -fno-omit-frame-pointer"
+
+RUN DEBIAN_FRONTEND=noninteractive \
+    curl https://codeload.github.com/openssl/openssl/zip/refs/heads/master --output "openssl-master.zip" && \
+    unzip -q openssl-master.zip && \
+    cd openssl-master && \
+    ./config ${OPENSSL_BUILD_OPTIONS} && \
+    make build_libs && make install_sw
 
 # ============
 # OQS Provider

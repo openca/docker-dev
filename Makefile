@@ -4,29 +4,31 @@
 
 all:
 	@echo
-	@echo "    Usage: make [ ubuntu | ubuntu24 | ubuntu22/base | ubuntu22/libpki ]"
+	@echo "    Usage: make [ ubuntu24 | ubuntu24/oqs | ubuntu24/libpki ]"
 	@echo
 	@exit 1
 
-ubuntu: ubuntu22/base ubuntu22/libpki
+ubuntu: ubuntu24/base ubuntu24/oqs
 
-ubuntu24::
+ubuntu/no-cache:: ubuntu24/base/no-cache ubuntu24/oqs/no-cache
+
+ubuntu24/base/no-cache::
 	@bin/docker-gen-image.sh ubuntu24
 	@mkdir -p ~/.dockercompose && \
-	 cp Docker/docker-compose-ubuntu24.yml ~/.dockercompose/
+	 cp Docker/docker-compose-ubuntu22-base.yml ~/.dockercompose/
 
 ubuntu24/oqs::
 	@bin/docker-gen-image.sh ubuntu24-oqs
 	@mkdir -p ~/.dockercompose && \
 	 cp Docker/docker-compose-ubuntu24-oqs.yml ~/.dockercompose/
 
-ubuntu22/base::
-	@bin/docker-gen-image.sh ubuntu22-base
+ubuntu24/base::
+	@bin/docker-gen-image.sh ubuntu24
 	@mkdir -p ~/.dockercompose && \
 	 cp Docker/docker-compose-ubuntu22-base.yml ~/.dockercompose/
 
-ubuntu22/libpki::
-	@bin/docker-gen-image.sh ubuntu22-libpki
+ubuntu24/libpki::
+	@bin/docker-gen-image.sh ubuntu24-libpki
 	@mkdir -p ~/.dockercompose && \
-	 cp Docker/docker-compose-ubuntu22-libpki.yml ~/.dockercompose/
+	 cp Docker/docker-compose-ubuntu24-libpki.yml ~/.dockercompose/
 

@@ -39,35 +39,42 @@ case "$1" in
 
   centos7)
     export DOCKER_FILE="Docker/Dockerfile.$1"
-    export OPTS="--build-arg DEV_BUILD=${DEV_BUILD}"
+    export OPTS="--build-arg DEV_BUILD=${DEV_BUILD} $NO_CACHE_OPT"
     export TAG_IMAGE_LATEST=$TAG_BASE_URL/centos:latest
     export TAG_IMAGE_VERSION=$TAG_BASE_URL/centos:7
     ;;
   
   ubuntu24)
     export DOCKER_FILE="Docker/Dockerfile.$1"
-    export OPTS="--build-arg DEV_BUILD=${DEV_BUILD}"
+    export OPTS="--build-arg DEV_BUILD=${DEV_BUILD} $NO_CACHE_OPT"
     export TAG_IMAGE_LATEST=$TAG_BASE_URL/$1:latest
     export TAG_IMAGE_VERSION=$TAG_BASE_URL/$1:$(date +%Y%m%d)
     ;;
 
   ubuntu24-oqs)
     export DOCKER_FILE="Docker/Dockerfile.$1"
-    export OPTS="--build-arg DEV_BUILD=${DEV_BUILD}"
+    export OPTS="--build-arg DEV_BUILD=${DEV_BUILD} $NO_CACHE_OPT"
+    export TAG_IMAGE_LATEST=$TAG_BASE_URL/$1:latest
+    export TAG_IMAGE_VERSION=$TAG_BASE_URL/$1:$(date +%Y%m%d)
+    ;;
+
+  ubuntu24-libpki)
+    export DOCKER_FILE="Docker/Dockerfile.$1"
+    export OPTS="--build-arg DEV_BUILD=${DEV_BUILD} $NO_CACHE_OPT"
     export TAG_IMAGE_LATEST=$TAG_BASE_URL/$1:latest
     export TAG_IMAGE_VERSION=$TAG_BASE_URL/$1:$(date +%Y%m%d)
     ;;
 
   ubuntu22-base)
     export DOCKER_FILE="Docker/Dockerfile.$1"
-    export OPTS="--build-arg DEV_BUILD=${DEV_BUILD}"
+    export OPTS="--build-arg DEV_BUILD=${DEV_BUILD} $NO_CACHE_OPT"
     export TAG_IMAGE_LATEST=$TAG_BASE_URL/ubuntu:latest-base-oqs
     export TAG_IMAGE_VERSION=$TAG_BASE_URL/ubuntu:22.04-base-oqs
     ;;
 
   ubuntu22-libpki)
     export DOCKER_FILE="Docker/Dockerfile.$1"
-    export OPTS="--build-arg DEV_BUILD=${DEV_BUILD}"
+    export OPTS="--build-arg DEV_BUILD=${DEV_BUILD} $NO_CACHE_OPT"
     export TAG_IMAGE_LATEST=$TAG_BASE_URL/ubuntu:latest-libpki-oqs
     export TAG_IMAGE_VERSION=$TAG_BASE_URL/ubuntu:22.04-libpki-oqs
     ;;

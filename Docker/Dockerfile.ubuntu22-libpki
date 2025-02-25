@@ -26,16 +26,16 @@ ENV IDE_BUILD=${DEV_BUILD}
 ENV DEST_DIR /opt/libpki-ossl3
 
 # Git Repo Setup Variables
-ENV LIBPKI_TMP_DIR              /tmp
-ENV LIBPKI_PQC_ARCH             zip
-ENV LIBPKI_PQC_BRANCH           main
-ENV LIBPKI_PQC_REPO             libpki-pqc
-ENV LIBPKI_PQC_GITHUB_BASE_URL  https://codeload.github.com/opencrypto
+ENV LIBPKI_TMP_DIR=/tmp
+ENV LIBPKI_PQC_ARCH=zip
+ENV LIBPKI_PQC_BRANCH=main
+ENV LIBPKI_PQC_REPO=libpki-pqc
+ENV LIBPKI_PQC_GITHUB_BASE_URL=https://codeload.github.com/opencrypto
 
 # Git Download Variables
-ENV LIBPKI_PQC_DIR              ${LIBPKI_TMP_DIR}/${LIBPKI_PQC_REPO}-${LIBPKI_PQC_BRANCH}
-ENV LIBPKI_PQC_URL              ${LIBPKI_PQC_GITHUB_BASE_URL}/${LIBPKI_PQC_REPO}/${LIBPKI_PQC_ARCH}/refs/heads/${LIBPKI_PQC_BRANCH}
-ENV LIBPKI_PQC_ARCH_FILE        ${LIBPKI_TMP_DIR}/${LIBPKI_PQC_REPO}-${LIBPKI_PQC_BRANCH}.${LIBPKI_PQC_ARCH}
+ENV LIBPKI_PQC_DIR=${LIBPKI_TMP_DIR}/${LIBPKI_PQC_REPO}-${LIBPKI_PQC_BRANCH}
+ENV LIBPKI_PQC_URL=${LIBPKI_PQC_GITHUB_BASE_URL}/${LIBPKI_PQC_REPO}/${LIBPKI_PQC_ARCH}/refs/heads/${LIBPKI_PQC_BRANCH}
+ENV LIBPKI_PQC_ARCH_FILE=${LIBPKI_TMP_DIR}/${LIBPKI_PQC_REPO}-${LIBPKI_PQC_BRANCH}.${LIBPKI_PQC_ARCH}
 
 # Alternatively you can use the helper script build-debug.sh
 # instead of the usual ./build.sh

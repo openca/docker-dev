@@ -25,6 +25,24 @@ the second argument is for pushing (y/n) the image to the repo after
 creation. The last argument 'no-cache' is used to generate the image
 from scratch (no cache).
 
+# The dev.sh Script
+
+To simplify the management of multiple DEV containers running at the same time,
+we added the dev.sh script (you can find it in the bin/ directory). This script
+accepts one argument for the name of the container and uses a variable for the
+image to use for the container. The current directory is bound to the work
+directory in the image /workdir.
+
+Example:
+
+```sh
+$ ./dev.sh my_project
+```
+
+This starts a new image named my_project-dev. The default is to connect all
+dev containers in the same docker network (devnet). Adjust the script's
+variables to use different settings.
+
 Enjoy OpenCA Software and Open Source!
 
 Yours Truly,

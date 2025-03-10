@@ -4,7 +4,7 @@
 
 all:
 	@echo
-	@echo "    Usage: make [ ubuntu24 | ubuntu24/oqs | ubuntu24/libpki ]"
+	@echo "    Usage: make [ ubuntu | ubuntu24/base | ubuntu24/oqs | ubuntu24/libpki ]"
 	@echo
 	@exit 1
 
@@ -31,4 +31,7 @@ ubuntu24/libpki::
 	@bin/docker-gen-image.sh ubuntu24-libpki
 	@mkdir -p ~/.dockercompose && \
 	 cp Docker/docker-compose-ubuntu24-libpki.yml ~/.dockercompose/
+
+dev:
+	@bin/dev.sh docker-image
 

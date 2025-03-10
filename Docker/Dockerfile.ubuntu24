@@ -36,7 +36,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
     git git-secrets git-crypt git-repair git-review git-revise \
     bind9-dnsutils netcat-traditional arping 2ping ssh \
     gcc gdb lldb clang cppcheck clang-tidy clang-tools \
-    libtool
+    libtool python3-venv
 
 RUN echo '' >> ~/.bashrc
 RUN echo 'alias python=python3' >> ~/.bashrc

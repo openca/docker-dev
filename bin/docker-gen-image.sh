@@ -95,7 +95,7 @@ echo "* Building Image from Dockerfile.$1 ..."
 echo
 
 # Build the image
-docker build --debug $NO_CACHE_OPT $OPTS -f "$DOCKER_FILE" -t "$TAG_IMAGE_LATEST" -t "$TAG_IMAGE_VERSION" .
+docker build $NO_CACHE_OPT $OPTS -f "$DOCKER_FILE" -t "$TAG_IMAGE_LATEST" -t "$TAG_IMAGE_VERSION" .
 
 # Checks the result and aborts on error
 if [ $? -gt 0 ] ; then

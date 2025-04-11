@@ -2,11 +2,16 @@
 # (c) 2021-2023 by Massimiliano Pala and OpenCA Labs
 # All Rights Reserved
 
-all:
+.PHONY: help all ubuntu ubuntu24/base ubuntu24/oqs ubuntu24/libpki dev
+
+
+help:
 	@echo
 	@echo "    Usage: make [ ubuntu | ubuntu24/base | ubuntu24/oqs | ubuntu24/libpki ]"
 	@echo
 	@exit 1
+
+all: ubuntu
 
 ubuntu: ubuntu24/base ubuntu24/oqs
 

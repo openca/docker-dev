@@ -1,7 +1,3 @@
-# The DOCKER_IMAGE_VERSION definition is used by
-# the scripts/gen-docker-image.sh to grab the
-# Dockerfile version
-
 # =====================
 # Begin: Pre-Requisites
 # =====================
@@ -25,7 +21,9 @@ ENV IDE_BUILD=${DEV_BUILD}
 
 # Update stuff
 RUN DEBIAN_FRONTEND=noninteractive apt-get update --fix-missing
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
+
+# Install missing development tools
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --fix-missing \
     build-essential checkinstall libssl-dev libwolfssl-dev \
     yarn curl wget git gnupg nano vim htop unzip \
     default-mysql-client unzip automake autoconf libtool \
@@ -36,16 +34,10 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
     git git-secrets git-crypt git-repair git-review git-revise \
     bind9-dnsutils netcat-traditional arping 2ping ssh \
     gcc gdb lldb clang cppcheck clang-tidy clang-tools \
-    libtool python3-venv
-
-RUN echo '' >> ~/.bashrc
-RUN echo 'alias python=python3' >> ~/.bashrc
-
-# This enables downloading from the git repository
-RUN apt-get -y install ssh && \
-    mkdir -p /root/.ssh && \
-    touch /root/.ssh/known_hosts && \
-    ssh-keyscan github.com >> /root/.ssh/known_host
+    libtool python3-venv astyle cmake gcc \
+    ninja-build libssl-dev python3-pytest python3-pytest-xdist \
+    unzip xsltproc doxygen graphviz python3-yaml valgrind \
+    gdb gdb-doc gdb-x86-64* gdb-i686* 
 
 # # =====================
 # # Begin: NodeJS Section
@@ -84,16 +76,14 @@ ENV NVM_DIR /usr/local/nvm
 ENV NODE_COMPILED_VERSION 16.14.0
 
 # Install nvm with node and npm
-ENV NVM_INST_VER v0.39.1
-ENV NVM_BASE_URL raw.githubusercontent.com/creationix/nvm
+ENV NVM_INST_VER v0.40.2
+# ENV NVM_BASE_URL raw.githubusercontent.com/creationix/nvm
+ENV NVM_BASE_URL raw.githubusercontent.com/nvm-sh/nvm/
 RUN curl https://${NVM_BASE_URL}/${NVM_INST_VER}/install.sh | bash \
 	&& . $NVM_DIR/nvm.sh \
 	&& nvm install $NODE_COMPILED_VERSION \
 	&& nvm alias default $NODE_COMPILED_VERSION \
 	&& nvm use default
-
-# # Stores the OLD PATH
-# ENV OLD_PATH  ${PATH}
 
 # Node Version Management
 ENV NODE_PATH $NVM_DIR/v$NODE_COMPILED_VERSION/lib/node_modules
@@ -113,6 +103,15 @@ RUN DEBIAN_FRONTEND=noninteractive \
       ts-node nodemon mocha openapi-sdk-generator \
       pm2 nopt node-gyp
 
+RUN echo '' >> ~/.bashrc && \
+      echo 'alias python=python3' >> ~/.bashrc
+
+# This enables downloading from the git repository
+RUN apt-get -y install ssh && \
+    mkdir -p /root/.ssh && \
+    touch /root/.ssh/known_hosts && \
+    ssh-keyscan github.com >> /root/.ssh/known_hosts
+
 # =======================
 # End: Finalize Section
 # =======================
@@ -122,13 +121,13 @@ RUN mkdir -p /workspace
 WORKDIR /workspace
 
 # Environment
-ENV NODE_ENV=development
+ENV NODE_ENV=DEV
 
 # ==========
 # Final Note
 # ==========
 
-# Enjoy the PQC DEV environment!
+# Enjoy the OpenCA DEV environment!
 # Dr. Pala <director@openca.org>
 
 CMD ["/bin/bash"]

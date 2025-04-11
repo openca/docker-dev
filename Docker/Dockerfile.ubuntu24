@@ -6,7 +6,7 @@
 ARG DEV_BUILD
 
 # Initial Setup
-FROM ubuntu:24.04
+FROM ubuntu:24.10
 
 # Argument for build only ("FROM" section specific)
 ARG DEV_BUILD
@@ -25,10 +25,10 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update --fix-missing
 # Install missing development tools
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --fix-missing \
     build-essential checkinstall libssl-dev libwolfssl-dev \
-    yarn curl wget git gnupg nano vim htop unzip \
+    yarn curl wget git gnupg vim htop unzip \
     default-mysql-client unzip automake autoconf libtool \
     libxml2-dev virtualenv python3 python3-pip python3-tabulate \
-    cmake ninja-build python3-pytest python3-pytest-xdist \
+    cmake ninja-build python3-pytest python3-pytest-xdist \    
     python3-jinja2 python3-yaml apt-utils \
     apt-transport-https curl wget uuid-dev \
     git git-secrets git-crypt git-repair git-review git-revise \
@@ -39,17 +39,16 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --fix-missing \
     unzip xsltproc doxygen graphviz python3-yaml valgrind \
     gdb gdb-doc gdb-x86-64* gdb-i686* 
 
-# # =====================
-# # Begin: NodeJS Section
-# # =====================
-# #
-# # To manage the versions installed of NodeJS
-# # we use NVM (Node Version Management) that
-# # simplifies switching among versions.
-# #
+# =====================
+# Begin: NodeJS Section
+# =====================
 
-# # Node Temp Directory (we use it to save temp)
-# # data (e.g., software compilation, etc)
+# To manage the versions installed of NodeJS
+# we use NVM (Node Version Management) that
+# simplifies switching among versions.
+
+# Node Temp Directory (we use it to save temp)
+# data (e.g., software compilation, etc)
 RUN mkdir /tmp/node
 ENV NODE_TMP /tmp/node
 
@@ -57,29 +56,12 @@ ENV NODE_TMP /tmp/node
 RUN mkdir /usr/local/nvm
 ENV NVM_DIR /usr/local/nvm
 
-# NOTE: The latest version (17.3.0) has some checks that
-#       interfere with the compilation of the addon/ module.
-#       Before upgrading, check out the compatibility of
-#       the node-addon-api compatibility
-#
-#       ENV NODE_VERSION 17.3.0
-#
-# ENV NODE_VERSION 16.14.0
-#
-# UPDATE: In order to be able to run the genSdk inside the
-#         container, we need to install a version supported
-#         by sqlite3 module (see yarnpkg.com/package/sqlite3).
-#
-#         ENV NODE_VERSION 14.19.1 (lts/fermium)
-#         
-# ENV NODE_COMPILED_VERSION 14.19.1
-ENV NODE_COMPILED_VERSION 16.14.0
+# Check the latest version of NodeJS
+# https://nodejs.org/en/download/releases/
+ENV NODE_COMPILED_VERSION 23.11.0
 
 # Install nvm with node and npm
-ENV NVM_INST_VER v0.40.2
-# ENV NVM_BASE_URL raw.githubusercontent.com/creationix/nvm
-ENV NVM_BASE_URL raw.githubusercontent.com/nvm-sh/nvm/
-RUN curl https://${NVM_BASE_URL}/${NVM_INST_VER}/install.sh | bash \
+RUN curl https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.2/install.sh | bash \
 	&& . $NVM_DIR/nvm.sh \
 	&& nvm install $NODE_COMPILED_VERSION \
 	&& nvm alias default $NODE_COMPILED_VERSION \

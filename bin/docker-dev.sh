@@ -1,6 +1,6 @@
 #!/bin/sh
 
-DEV_OS_IMAGE=openca.org/ubuntu24-oqs:latest
+DEV_OS_IMAGE=openca.org/ubuntu24-crypto:latest
 
 # Accept one argument
 PROJECT_NAME=$1
@@ -13,7 +13,7 @@ fi
 # Runs the container
 docker container run -d --rm --tty \
   -v "$PWD:/workspace" --network devnet \
-  --name "$PROJECT_NAME"-dev "$DEV_OS_IMAGE"
+  --name "$PROJECT_NAME" "$DEV_OS_IMAGE"
 
 exit 0
 

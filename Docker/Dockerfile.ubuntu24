@@ -105,9 +105,6 @@ WORKDIR /workspace
 # Environment
 ENV NODE_ENV=DEV
 
-# Reference to the repository where the Docker image is stored
-LABEL org.opencontainers.image.source=https://github.com/openca/docker-dev
-
 # ==========
 # Final Note
 # ==========

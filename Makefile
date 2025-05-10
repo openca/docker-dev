@@ -12,12 +12,12 @@ NOW := $(shell date +%Y%m%d)
 REPO_OWNER := openca
 REPO_NAME := docker-dev
 
-
+# Phony targets
 .PHONY: help all ubuntu ubuntu24/base ubuntu24/oqs ubuntu24/libpki dev
 
 help:
 	@echo
-	@echo "    Usage: make [ all | base-dev | crypto-dev | libpki-dev ]"
+	@echo "    Usage: make [ all | base-dev | crypto-dev | libpki-dev | scripts ]"
 	@echo
 	@exit 1
 
@@ -28,7 +28,7 @@ base-dev:: ubuntu24/base
 ubuntu24/base:: ubuntu24/base/build # ubuntu24/docker/push
 
 ubuntu24/base/build::
-	@bin/docker-gen-image.sh ubuntu24
+	@bin/docker-gen-image.sh ubuntu24 n $(NOCACHE)
 	@mkdir -p ~/.dockercompose && \
 	 cp Docker/docker-compose-ubuntu24.yml ~/.dockercompose/
 
@@ -40,7 +40,7 @@ crypto-dev:: ubuntu24/crypto
 ubuntu24/crypto:: ubuntu24/crypto/build ubuntu24/crypto/push
 
 ubuntu24/crypto/build::
-	@bin/docker-gen-image.sh ubuntu24-crypto
+	@bin/docker-gen-image.sh ubuntu24-crypto n $(NOCACHE)
 	@mkdir -p ~/.dockercompose && \
 	 cp Docker/docker-compose-ubuntu24-crypto.yml ~/.dockercompose/
 
@@ -52,7 +52,7 @@ libpki-dev:: ubuntu24/libpki
 ubuntu24/libpki:: ubuntu24/libpki/build ubuntu24/libpki/push
 
 ubuntu24/libpki/build::
-	@bin/docker-gen-image.sh ubuntu24-libpki
+	@bin/docker-gen-image.sh ubuntu24-libpki n $(NOCACHE)
 	@mkdir -p ~/.dockercompose && \
 	 cp Docker/docker-compose-ubuntu24-libpki.yml ~/.dockercompose/
 
@@ -64,9 +64,23 @@ docker-push:
 	@docker image tag "$(TAG)" "ghcr.io/$(REPO_OWNER)/$(REPO_NAME):latest"
 	@docker image tag "$(TAG)" "ghcr.io/$(REPO_OWNER)/$(REPO_NAME):$(NOW)"
 	@echo $(CR_PAT) | docker login ghcr.io -u $(CR_USR) --password-stdin && \
-		docker push "ghcr.io/$(REPO_OWNER)/$(REPO_NAME):latest" && \
 		docker push "ghcr.io/$(REPO_OWNER)/$(REPO_NAME):$(NOW)"
 	@echo "Docker image pushed successfully."
+	@echo ""
+
+scripts:
+	@echo && echo "Copying scripts to the local directory..."
+	@target_dir=~/bin; \
+	 if ! [ -d "$$target_dir" ]; then \
+	 	target_dir=~/.bin ; \
+	 	if ! [ -d "$$target_dir" ]; then \
+	 		echo "Creating target directory: $$target_dir"; \
+	 		mkdir -p "$$target_dir" ; \
+	 	fi; \
+	 fi ; \
+	 cp -r bin/* "$$target_dir"/
+	@echo ""
+	@echo "Please make sure to add the target directory to your PATH variable."
 	@echo ""
 
 run-base:

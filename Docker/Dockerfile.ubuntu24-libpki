@@ -19,6 +19,9 @@ RUN chmod +x /tmp/build_libpki.sh
 RUN DEBIAN_FRONTEND=noninteractive \
     /tmp/build_libpki.sh
 
+# Reference to the repository where the Docker image is stored
+LABEL org.opencontainers.image.source=https://github.com/openca/docker-dev
+
 # ==========
 # Final Note
 # ==========

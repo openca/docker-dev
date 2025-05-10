@@ -126,6 +126,9 @@ RUN DEBIAN_FRONTEND=noninteractive \
 RUN mkdir -p ${PRJ_DEST_DIR}/ssl
 ADD openssl.cnf ${PRJ_DEST_DIR}/ssl
 
+# Reference to the repository where the Docker image is stored
+LABEL org.opencontainers.image.source=https://github.com/openca/docker-dev
+
 # ==========
 # Final Note
 # ==========

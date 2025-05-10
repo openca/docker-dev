@@ -1,0 +1,58 @@
+#!/bin/bash
+
+# Gets the `curl` command path
+CURL_CMD=$(command -v curl)
+if [ -z "$CURL_CMD" ]; then
+    echo "Error: curl is not installed. Please install it and try again."
+    exit 1
+fi
+
+# Default Github URLs
+GITHUB_BASE_URL=https://codeload.github.com
+GITHUB_ARCHIVE_TYPE=zip
+
+# OpenSSL Base Github URL
+OPENCA_GITHUB_BASE_URL=${GITHUB_BASE_URL}/openca
+
+# LibPKI Package - See the Release Page here:
+LIBPKI_BASE_URL=${GITHUB_BASE_URL}/openssl/${GITHUB_ARCHIVE_TYPE}/refs/tags
+LIBPKI_FULL_URL=${LIBPKI_BASE_URL}/${LIBPKI_VERSION}
+LIBPKI_OUTPUT=libpki-${LIBPKI_VERSION}.${GITHUB_ARCHIVE_TYPE}
+LIBPKI_DIR=libpki-${LIBPKI_VERSION}
+
+# OpenSSL Version To Build
+LIBPKI_VERSION=master
+
+# OpenSSL Download URL
+LIBPKI_BASE_URL=${OPENCA_GITHUB_BASE_URL}/libpki/${GITHUB_ARCHIVE_TYPE}/refs/tags
+LIBPKI_FULL_URL=${LIBPKI_BASE_URL}/${LIBPKI_VERSION}
+
+# Output File Name and Directory for building OpenSSL
+LIBPKI_OUTPUT=${LIBPKI_VERSION}.${GITHUB_ARCHIVE_TYPE}
+LIBPKI_DIR=${LIBPKI_VERSION}
+
+# Download, Unzip, and Build OpenSSL
+$CURL_CMD -s "${LIBPKI_FULL_URL}" --output "${LIBPKI_OUTPUT}" && \
+    unzip -qq "${LIBPKI_OUTPUT}" && \
+    echo "Building $LIBPKI_VERSION, please wait..." && \
+    result=$(cd "libpki-${LIBPKI_DIR}" && \
+        ./configure --prefix=${PRJ_DEST_DIR} --with-openssl-dir=${PRJ_DEST_DIR}/ssl 2>&1 && \
+            make 2>&1 && \
+            make install)
+
+# Check if the build was successful
+if [ $? -ne 0 ]; then
+    echo "Error: OpenSSL build failed."
+    echo "$result"
+    rm -f "${OSSL_OUTPUT}"
+    rm -rf "${OSSL_DIR}"
+    exit 1
+fi
+
+# Cleanup
+rm -f "${OSSL_OUTPUT}"
+rm -rf "${OSSL_DIR}"
+
+# All Done
+echo "OpenSSL ${OSSL_VERSION} has been built and installed in ${PRJ_DEST_DIR}."
+exit 0

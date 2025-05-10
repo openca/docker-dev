@@ -14,10 +14,10 @@ ENV GITHUB_ARCHIVE_TYPE=zip
 # Build Directory
 ENV PRJ_DEST_DIR=/opt/crypto
 
-COPY ./bin/build_libpki.sh /tmp/build_libpki.sh
-RUN chmod +x /tmp/build_libpki.sh
+COPY ./bin/build-libpki /tmp/build-libpki
+RUN chmod +x /tmp/build-libpki
 RUN DEBIAN_FRONTEND=noninteractive \
-    /tmp/build_libpki.sh
+    /tmp/build-libpki
 
 # Reference to the repository where the Docker image is stored
 LABEL org.opencontainers.image.source=https://github.com/openca/docker-dev

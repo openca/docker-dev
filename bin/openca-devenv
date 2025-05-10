@@ -1,8 +1,11 @@
 #!/bin/sh
 
+# Retrieves the scripts filename
+CMD_NAME=$(basename $0)
+
 # General Configuration Options
-DEV_OS_IMAGE=openca.org/ubuntu24-crypto:latest
-NETOWRK_NAME=devnet
+DEV_OS_IMAGE=ghcr.io/openca/dev-crypto:latest
+NETWORK_NAME=devnet
 
 # Options
 KILL_CONTAINER=0
@@ -73,23 +76,23 @@ if [ "$(docker ps -q -f name=$PROJECT_NAME)" != "" ] ; then
     docker container rm -f "$PROJECT_NAME" 2>&1 > /dev/null
     if [ $? -ne 0 ] ; then
       [ $QUIET -eq 0 ] && \
-        echo "`date +"%Y-%m-%d %H:%M:%S"`: openca-dev: failed to kill the container"
+        echo "`date +"%Y-%m-%d %H:%M:%S"` ($CMD_NAME): failed to kill the container ($PROJECT_NAME)"
       exit 1
     fi
     [ $VERBOSE -eq 1 ] && \
-      echo "`date +"%Y-%m-%d %H:%M:%S"`: openca-dev: container $PROJECT_NAME killed"
+      echo "`date +"%Y-%m-%d %H:%M:%S"` ($CMD_NAME): container killed ($PROJECT_NAME)"
     exit 0
   else
     # Container is already running
     [ $QUIET -eq 0 ] && \
-      echo "`date +"%Y-%m-%d %H:%M:%S"`: openca-dev: container $PROJECT_NAME is already running"
+      echo "`date +"%Y-%m-%d %H:%M:%S"` ($CMD_NAME): container already running ($PROJECT_NAME)"
     exit 1
   fi
 else
   if [ $KILL_CONTAINER -eq 1 ] ; then
     # Container is not running
     [ $QUIET -eq 0 ] && \
-      echo "`date +"%Y-%m-%d %H:%M:%S"`: openca-dev: container $PROJECT_NAME is not running"
+      echo "`date +"%Y-%m-%d %H:%M:%S"` ($CMD_NAME): container is not running ($PROJECT_NAME)"
     exit 1
   fi
 fi
@@ -100,11 +103,11 @@ if [ "$(docker network ls | grep devnet)" = "" ] ; then
   docker network create devnet
   if [ $? -ne 0 ] ; then
     [ $QUIET -eq 0 ] && \
-      echo "`date +"%Y-%m-%d %H:%M:%S"`: openca-dev: failed to create the devnet network"
+      echo "`date +"%Y-%m-%d %H:%M:%S"` ($CMD_NAME): failed to create the container's network ($NETWORK_NAME)"
     exit 1
   fi
   [ $VERBOSE -eq 1 ] && \
-    echo "`date +"%Y-%m-%d %H:%M:%S"`: openca-dev: container's network created ($NETWORK_NAME)"
+    echo "`date +"%Y-%m-%d %H:%M:%S"` ($CMD_NAME): container's network created ($NETWORK_NAME)"
 fi
 
 # Runs the container
@@ -113,11 +116,11 @@ res=$( docker container run -d --rm --tty \
   --name "$PROJECT_NAME" "$DEV_OS_IMAGE" )
 if [ $? -ne 0 ] ; then
   [ $QUIET -eq 1 ] && \
-    echo "`date +"%Y-%m-%d %H:%M:%S"`: openca-dev: failed to run the container (name: $PROJECT_NAME)"
+    echo "`date +"%Y-%m-%d %H:%M:%S"` ($CMD_NAME): failed to run the container ($PROJECT_NAME)"
   exit 1
 else
   [ $VERBOSE -eq 1 ] && \
-    echo "`date +"%Y-%m-%d %H:%M:%S"`: openca-dev: container started (name: $PROJECT_NAME)"
+    echo "`date +"%Y-%m-%d %H:%M:%S"` ($CMD_NAME): container started ($PROJECT_NAME)"
 fi
 
 exit $?

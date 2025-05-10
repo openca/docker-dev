@@ -32,19 +32,20 @@ fi
 TODAY=$(date +%Y%m%d)
 
 # TAGS
-export TAG_BASE_URL=openca.org
+# export TAG_BASE_URL=openca.org
+export TAG_BASE_URL=ghcr.io/openca
 export DOCKER_FILE="Docker/Dockerfile.$1"
 export OPTS="--build-arg DEV_BUILD=${DEV_BUILD} $NO_CACHE_OPT"
-export TAG_IMAGE_LATEST=$TAG_BASE_URL/$1:latest
-export TAG_IMAGE_VERSION=$TAG_BASE_URL/$1:$(date +%Y%m%d)
+export TAG_IMAGE_BASE=$TAG_BASE_URL/$1
 
 # Some Info
 echo "* Building Image from Dockerfile.$1 ..."
-echo "  - Using TAG_MAGE_LATEST: ${TAG_IMAGE_LATEST}"
+echo "  - Using TAG_MAGE_LATEST: ${TAG_IMAGE_BASE}:latest"
 echo
 
 # Build the image
-docker build $NO_CACHE_OPT $OPTS -f "$DOCKER_FILE" -t "$TAG_IMAGE_LATEST" -t "$TAG_IMAGE_VERSION" .
+docker build $NO_CACHE_OPT $OPTS -f "$DOCKER_FILE" \
+  -t "$TAG_IMAGE_BASE:latest" -t "$TAG_IMAGE_BASE:$(date +%Y%m%d)" .
 
 # Checks the result and aborts on error
 if [ $? -gt 0 ] ; then
@@ -52,13 +53,6 @@ if [ $? -gt 0 ] ; then
   echo "ERROR: Cannot build image for [$DOCKER_FILE], aborting."
   echo
   exit 2
-fi
-
-# Pushes the image to the cablelabs repo, if requested
-if [ "${PUSH_IMAGE}" = "yes" ] ; then
-  docker login code.github.com:4567 && \
-    docker push ${TAG_IMAGE_LATEST} && \
-    docker push ${TAG_IMAGE_VERSION}
 fi
 
 echo

@@ -47,10 +47,10 @@ ENV PRJ_DEST_DIR=/opt/crypto
 # OpenSSL 3.5+
 # ============
 
-COPY ./bin/build_ossl.sh /tmp/build_ossl.sh
-RUN chmod +x /tmp/build_ossl.sh
+COPY ./bin/build-openssl /tmp/build-openssl
+RUN chmod +x /tmp/build-openssl
 RUN DEBIAN_FRONTEND=noninteractive \
-    /tmp/build_ossl.sh && rm /tmp/build_ossl.sh
+    /tmp/build-openssl && rm /tmp/build-openssl
 
 # ENV OPENSSL_BUILD_OPTIONS="\
 #     --prefix=${PRJ_DEST_DIR} -d -shared -no-asm \
@@ -118,7 +118,7 @@ ENV NODE_ENV=development
 # to the root's user bashrc
 RUN DEBIAN_FRONTEND=noninteractive \
   echo >> ~/.bashrc \
-  && echo "export PATH=${PRJ_DEST_DIR}/bin:$PATH" >> ~/.bashrc \
+  && echo "export PATH=${PRJ_DEST_DIR}/.bin:${PRJ_DEST_DIR}/bin:$PATH" >> ~/.bashrc \
   && echo "export LD_LIBRARY_PATH=${PRJ_DEST_DIR}/lib:${PRJ_DEST_DIR}/lib64" >> ~/.bashrc \
   && echo >> ~/.bashrc
 

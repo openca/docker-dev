@@ -32,14 +32,15 @@ located in the root of the repository. You can use the following
 commands to build the image:
 
 ```bash
-$ make [ all | base-dev | crypto-dev | libpki-dev ]
+$ make [ all | base-dev | crypto-dev | libpki-dev | scripts ]
 ```
 
 The `all` target will build all the images, while the other targets
 will build the specific images. The `base-dev` target will build the
 base development image, the `crypto-dev` target will build the
 cryptographic development image, and the `libpki-dev` target will
-build the libpki development image.
+build the libpki development image. The `scripts` target will copy the
+scripts to the local directory.
 
 Internally, the Makefile uses the `docker-gen-image.sh` script to build the
 images.
@@ -58,10 +59,17 @@ repository (e.g., ~/bin/docker-dev.sh or ~/.bin/docker-dev.sh)
 Example:
 
 ```sh
-$ bin/docker-dev.sh my_project
+$ openca-devenv [-k] [project-name]
 ```
 
-This starts a new image named my_project-dev. The default is to connect all dev containers in the same docker network (devnet). Adjust the script's variables to use different settings.
+This starts a new image named 'project-name' inside the 'devnet' network. The default
+name used for the container when 'project-name' is not given is taken from the name
+of the current directory. When the -k option is used, the script will kill the container
+if it is already running.
+
+When trying to start a container with the same name, the script will generate an error
+and will not start the container. When killing a container that has not been started, the script
+will generate an error and will not kill any container.
 
 ## Contributing
 

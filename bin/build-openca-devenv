@@ -1,7 +1,5 @@
 #!/bin/bash
 
-DEB_BUILD=3
-
 echo "Docker Build Script - v1.0.0"
 echo "(c) Massimiliano Pala and OpenCA Labs"
 echo "All Rights Reserved"
@@ -10,7 +8,7 @@ echo
 if [ "$1" = "" ] ; then
   echo "ERROR: Missing required parameter (image name)"
   echo
-  echo "    USAGE: $0 [ ubuntu24 | ubuntu24-crypto | ubuntu24-bpki ] [ y | n ] [ no-cache ]"
+  echo "    USAGE: $0 [ ubuntu24 | ubuntu24-crypto | ubuntu24-libpki ] [ y | n ] [ no-cache ]"
   echo
   echo "Where the first argument is the image name. Use 'y' as the second argument"
   echo "to force the pushing of the image to the official repository on CodeLab."
@@ -37,15 +35,18 @@ export TAG_BASE_URL=ghcr.io/openca
 export DOCKER_FILE="Docker/Dockerfile.$1"
 export OPTS="--build-arg DEV_BUILD=${DEV_BUILD} $NO_CACHE_OPT"
 export TAG_IMAGE_BASE=$TAG_BASE_URL/$1
+export TAG_IMAGE_LATEST=$TAG_IMAGE_BASE:latest
+export TAG_IMAGE_DATE=$TAG_IMAGE_BASE:$TODAY
 
 # Some Info
 echo "* Building Image from Dockerfile.$1 ..."
-echo "  - Using TAG_MAGE_LATEST: ${TAG_IMAGE_BASE}:latest"
+echo "  - Using TAG_IMAGE_LATEST: ${TAG_IMAGE_LATEST}"
+echo "  - Using TAG_IMAGE_DATE: ${TAG_IMAGE_DATE}"
 echo
 
 # Build the image
 docker build $NO_CACHE_OPT $OPTS -f "$DOCKER_FILE" \
-  -t "$TAG_IMAGE_BASE:latest" -t "$TAG_IMAGE_BASE:$(date +%Y%m%d)" .
+  -t "$TAG_IMAGE_LATEST" -t "$TAG_IMAGE_DATE" .
 
 # Checks the result and aborts on error
 if [ $? -gt 0 ] ; then

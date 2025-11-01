@@ -4,7 +4,7 @@
 CMD_NAME=$(basename $0)
 
 # General Configuration Options
-DEV_OS_IMAGE=ghcr.io/openca/dev-crypto:latest
+DEV_OS_IMAGE=ghcr.io/openca/devenv-crypto:latest
 NETWORK_NAME=devnet
 
 # Options
@@ -67,6 +67,20 @@ fi
 if [ "x$PROJECT_NAME" = "x" ] ; then
   # Gets the name of the current directory
   PROJECT_NAME=$(basename "$PWD")
+fi
+
+# Check if the image was already pulled or created
+if [ "$(docker image ls | grep $PROJECT_NAME)" = "" ] ; then
+
+  # Pull the image
+  docker pull "$DEV_OS_IMAGE" > /dev/null 2>&1
+  if [ $? -ne 0 ] ; then
+    [ $QUIET -eq 0 ] && \
+      echo "`date +"%Y-%m-%d %H:%M:%S"` ($CMD_NAME): failed to pull the image ($DEV_OS_IMAGE)"
+    exit 1
+  fi
+  [ $VERBOSE -eq 1 ] && \
+    echo "`date +"%Y-%m-%d %H:%M:%S"` ($CMD_NAME): image pulled ($DEV_OS_IMAGE)"
 fi
 
 # Check if the container is already running

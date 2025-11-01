@@ -1,5 +1,5 @@
 # Initial Setup
-FROM openca.org/ubuntu24-crypto:latest
+FROM ghcr.io/openca/devenv-crypto:latest
 
 # Argument for build only ("FROM" section specific)
 ARG DEV_BUILD

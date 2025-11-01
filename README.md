@@ -18,7 +18,7 @@ To build a new image, you can use the bin/docker-gen-image.sh script
 that accepts the image type (supported is 'centos7') use the foollowing
 command:
 
-  $ scripts/docker-gen-image.sh <type> [ y | n ] [no-cache]
+  $ scripts/build-openca-devenv <type> [ y | n ] [no-cache]
 
 where the type is 'ubuntu24' (uses the Docker/Dockerfile.ubuntu24.yml) and
 the second argument is for pushing (y/n) the image to the repo after

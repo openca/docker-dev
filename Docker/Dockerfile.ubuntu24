@@ -6,7 +6,7 @@
 ARG DEV_BUILD
 
 # Initial Setup
-FROM ubuntu:24.10
+FROM ubuntu:24.04
 
 # Argument for build only ("FROM" section specific)
 ARG DEV_BUILD
@@ -20,10 +20,11 @@ ENV LANGUAGE=C
 ENV IDE_BUILD=${DEV_BUILD}
 
 # Update stuff
-RUN DEBIAN_FRONTEND=noninteractive apt-get update -y --fix-missing
+RUN apt update
 
 # Install missing development tools
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --fix-missing \
+RUN DEBIAN_FRONTEND=noninteractive \
+    apt-get install -y --fix-missing \
     build-essential checkinstall libssl-dev libwolfssl-dev \
     yarn curl wget git gnupg vim htop unzip \
     default-mysql-client unzip automake autoconf libtool \
@@ -50,15 +51,15 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --fix-missing \
 # Node Temp Directory (we use it to save temp)
 # data (e.g., software compilation, etc)
 RUN mkdir /tmp/node
-ENV NODE_TMP /tmp/node
+ENV NODE_TMP=/tmp/node
 
 # Node Version Management
 RUN mkdir /usr/local/nvm
-ENV NVM_DIR /usr/local/nvm
+ENV NVM_DIR=/usr/local/nvm
 
 # Check the latest version of NodeJS
 # https://nodejs.org/en/download/releases/
-ENV NODE_COMPILED_VERSION 23.11.0
+ENV NODE_COMPILED_VERSION=23.11.0
 
 # Install nvm with node and npm
 RUN curl https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.2/install.sh | bash \
@@ -68,8 +69,8 @@ RUN curl https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.2/install.sh | bash 
 	&& nvm use default
 
 # Node Version Management
-ENV NODE_PATH $NVM_DIR/v$NODE_COMPILED_VERSION/lib/node_modules
-ENV PATH      $NVM_DIR/versions/node/v$NODE_COMPILED_VERSION/bin:$PATH
+ENV NODE_PATH=$NVM_DIR/v$NODE_COMPILED_VERSION/lib/node_modules
+ENV PATH=$NVM_DIR/versions/node/v$NODE_COMPILED_VERSION/bin:$PATH
 
 # Use NVM to switch to the new version
 RUN DEBIAN_FRONTEND=noninteractive \

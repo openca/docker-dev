@@ -6,7 +6,7 @@
 ARG DEV_BUILD
 
 # Initial Setup
-FROM openca.org/ubuntu24:latest
+FROM ghcr.io/openca/devenv:latest
 
 # Argument for build only ("FROM" section specific)
 ARG DEV_BUILD

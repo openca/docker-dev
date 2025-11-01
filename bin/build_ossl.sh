@@ -15,7 +15,7 @@ GITHUB_ARCHIVE_TYPE=zip
 OSSL_GITHUB_BASE_URL=${GITHUB_BASE_URL}/openssl
 
 # OpenSSL Version To Build
-OSSL_VERSION=openssl-3.5.0
+OSSL_VERSION=openssl-3.6.0
 
 # OpenSSL Download URL
 OSSL_BASE_URL=${OSSL_GITHUB_BASE_URL}/openssl/${GITHUB_ARCHIVE_TYPE}/refs/tags

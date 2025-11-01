@@ -7,7 +7,7 @@
 
 help:
 	@echo
-	@echo "    Usage: make [ all | ubuntu24-libpki | ubuntu24-crypto | ubuntu24 | ubuntu24/no-cache ]"
+	@echo "    Usage: make [all | ubuntu24/libpki | ubuntu24/crypto | ubuntu24] [yes | no] [no-cache]"
 	@echo
 	@exit 1
 
@@ -20,7 +20,7 @@ ubuntu24/base/no-cache::
 	@mkdir -p ~/.dockercompose && \
 	 cp Docker/docker-compose-ubuntu22-base.yml ~/.dockercompose/
 
-ubuntu24-crypto::
+ubuntu24/crypto::
 	@bin/docker-gen-image.sh ubuntu24-crypto
 	@mkdir -p ~/.dockercompose && \
 	 cp Docker/docker-compose-ubuntu24-crypto.yml ~/.dockercompose/

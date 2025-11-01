@@ -1,0 +1,45 @@
+May 10 2025 Dr. Max <director@openca.org>
+- Updated scripts to allow for docker images push but the base image.
+
+Apr 11 2025 Dr. Max <director@openca.org>
+- Added script to start a dev container for with a specific name (e.g., 'my-project-dev').
+- Updated container name from using OQS to a more generic '-crypto' name.
+- Updated Docker file to use a script to build openssl.
+- Dockerfile cleanup.
+
+Mar 23 2025 Dr. Max <director@openca.org>
+- Removed the --debug flag when building the image.
+
+Mar 10 2025 Dr. Pala <director@openca.org>
+- Added Github management files.
+
+Feb 24 2025 Dr. Max <director@openca.org>
+- Updated packages and added useful activation bin/dev.sh script.
+
+Jan 13 2025 Dr. Pala <director@openca.org>
+- Updated ubuntu24-libpki build scripts.
+
+Jul 21 2024 Dr. Pala <director@openca.org>
+- Added support for Ubuntu24 docker images.
+
+Sep 14 2023 Dr. Massimiliano Pala <director@openca.org>
+- Updated install to copy the compose file in the ~/.dockercompose/ directory.
+- Updated set of aliases for starting/stopping dev containers.
+
+Sep 14 2023 Massimiliano Pala <director@openca.org>
+- Updated build for ubuntu by adding the openssl.cnf file.
+
+Sep 1 2023 Massimiliano Pala <director@openca.org>
+- Added Makefile for easy build of images.
+- Updated Docker to build two different containers for ubuntu22.
+- Updated generation of DEV docker container for Ubuntu22.
+- Added OpenSSL config file.
+
+Aug 24 2022 Massimiliano Pala <director@openca.org>
+- Centos7: Updated Dockerfile to correctly compile libpki without support for LibOQS.
+
+Aug 22 2022 Massimiliano Pala <director@openca.org>
+- Updated default exported port for React Apps.
+
+Jun 27 2022 Massimiliano Pala <director@openca.org>
+- Updated composer file to import the current directory in the DEV container.

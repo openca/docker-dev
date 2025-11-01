@@ -1,0 +1,127 @@
+#!/bin/sh
+
+# Retrieves the scripts filename
+CMD_NAME=$(basename $0)
+
+# General Configuration Options
+DEV_OS_IMAGE=ghcr.io/openca/dev-crypto:latest
+NETWORK_NAME=devnet
+
+# Options
+KILL_CONTAINER=0
+VERBOSE=1
+DEBUG=0
+QUIET=0
+
+# Parse the command line arguments
+while [ $# -gt 0 ] ; do
+  case "$1" in
+    -d|--debug)
+      set -x
+      shift 1
+      DEBUG=1
+      ;;
+    -v|--verbose)
+      shift 1
+      VERBOSE=1
+      ;;
+    -q|--quiet)
+      shift 1
+      VERBOSE=0
+      QUIET=1
+      ;;
+    -h|--help)
+      echo "Usage: $0 [options] [ <project_name> [<dev_os_image>] ]"
+      echo "  project_name: Name of the project (default: unspecified-dev)"
+      echo "  dev_os_image: Docker image to use (default: openca.org/ubuntu24-crypto:latest)"
+      echo
+      echo "Main Options:"
+      echo "  -d, --debug: Enable debug mode"
+      echo "  -v, --verbose: Enable verbose mode"
+      echo "  -k, --kill: Kill the container if it is already running"
+      echo
+      echo "Additional options:"
+      echo "  -h, --help: Show this help message"
+      exit 0
+      ;;
+    -k|--kill)
+      shift 1
+      KILL_CONTAINER=1
+      ;;
+    *)
+      break
+      ;;
+  esac
+done
+
+
+# Accept one argument
+PROJECT_NAME=$1
+
+# Can customize the image tag used
+if ! [ "x$2" = "x" ] ; then
+  DEV_OS_IMAGE=$2
+fi
+
+# Default Value
+if [ "x$PROJECT_NAME" = "x" ] ; then
+  # Gets the name of the current directory
+  PROJECT_NAME=$(basename "$PWD")
+fi
+
+# Check if the container is already running
+if [ "$(docker ps -q -f name=$PROJECT_NAME)" != "" ] ; then
+  if [ $KILL_CONTAINER -eq 1 ] ; then
+    # Kill the container
+    docker container rm -f "$PROJECT_NAME" 2>&1 > /dev/null
+    if [ $? -ne 0 ] ; then
+      [ $QUIET -eq 0 ] && \
+        echo "`date +"%Y-%m-%d %H:%M:%S"` ($CMD_NAME): failed to kill the container ($PROJECT_NAME)"
+      exit 1
+    fi
+    [ $VERBOSE -eq 1 ] && \
+      echo "`date +"%Y-%m-%d %H:%M:%S"` ($CMD_NAME): container killed ($PROJECT_NAME)"
+    exit 0
+  else
+    # Container is already running
+    [ $QUIET -eq 0 ] && \
+      echo "`date +"%Y-%m-%d %H:%M:%S"` ($CMD_NAME): container already running ($PROJECT_NAME)"
+    exit 1
+  fi
+else
+  if [ $KILL_CONTAINER -eq 1 ] ; then
+    # Container is not running
+    [ $QUIET -eq 0 ] && \
+      echo "`date +"%Y-%m-%d %H:%M:%S"` ($CMD_NAME): container is not running ($PROJECT_NAME)"
+    exit 1
+  fi
+fi
+
+# Check the dev network is available
+if [ "$(docker network ls | grep devnet)" = "" ] ; then
+  # Create the dev network
+  docker network create devnet
+  if [ $? -ne 0 ] ; then
+    [ $QUIET -eq 0 ] && \
+      echo "`date +"%Y-%m-%d %H:%M:%S"` ($CMD_NAME): failed to create the container's network ($NETWORK_NAME)"
+    exit 1
+  fi
+  [ $VERBOSE -eq 1 ] && \
+    echo "`date +"%Y-%m-%d %H:%M:%S"` ($CMD_NAME): container's network created ($NETWORK_NAME)"
+fi
+
+# Runs the container
+res=$( docker container run -d --rm --tty \
+  -v "$PWD:/workspace" --network devnet \
+  --name "$PROJECT_NAME" "$DEV_OS_IMAGE" )
+if [ $? -ne 0 ] ; then
+  [ $QUIET -eq 1 ] && \
+    echo "`date +"%Y-%m-%d %H:%M:%S"` ($CMD_NAME): failed to run the container ($PROJECT_NAME)"
+  exit 1
+else
+  [ $VERBOSE -eq 1 ] && \
+    echo "`date +"%Y-%m-%d %H:%M:%S"` ($CMD_NAME): container started ($PROJECT_NAME)"
+fi
+
+exit $?
+

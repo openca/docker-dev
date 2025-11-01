@@ -9,7 +9,7 @@ echo
 TODAY=$(date +%Y%m%d)
 
 # DEV BUILD FLAG
-TAG_DEVENV="devenv"
+TAG_DEVENV="devenv-base"
 
 if [ "$1" = "" ] ; then
 
@@ -26,7 +26,7 @@ else
 
   case "$1" in
     ubuntu24)
-        TAG_DEVENV="devenv"
+        TAG_DEVENV="devenv-base"
       ;;
     ubuntu24-crypto)
         TAG_DEVENV="devenv-crypto"

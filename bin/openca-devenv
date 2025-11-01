@@ -38,6 +38,8 @@ while [ $# -gt 0 ] ; do
       echo "Main Options:"
       echo "  -d, --debug: Enable debug mode"
       echo "  -v, --verbose: Enable verbose mode"
+      echo "  -q, --quiet: Enable quiet mode"
+      echo "  -s, --shell: Start a shell inside the running container"
       echo "  -k, --kill: Kill the container if it is already running"
       echo
       echo "Additional options:"
@@ -48,12 +50,16 @@ while [ $# -gt 0 ] ; do
       shift 1
       KILL_CONTAINER=1
       ;;
+    -s|--shell)
+      # Starts a shell inside the container
+      shift 1
+      RUN_SHELL=1
+      ;;
     *)
       break
       ;;
   esac
 done
-
 
 # Accept one argument
 PROJECT_NAME=$1
@@ -70,7 +76,7 @@ if [ "x$PROJECT_NAME" = "x" ] ; then
 fi
 
 # Check if the image was already pulled or created
-if [ "$(docker image ls | grep $PROJECT_NAME)" = "" ] ; then
+if [ "$( docker image ls | grep \"$PROJECT_NAME\" )" = "" ] ; then
 
   # Pull the image
   docker pull "$DEV_OS_IMAGE" > /dev/null 2>&1
@@ -81,6 +87,12 @@ if [ "$(docker image ls | grep $PROJECT_NAME)" = "" ] ; then
   fi
   [ $VERBOSE -eq 1 ] && \
     echo "`date +"%Y-%m-%d %H:%M:%S"` ($CMD_NAME): image pulled ($DEV_OS_IMAGE)"
+fi
+
+# Check if we only want to run a shell in the running container
+if [ "$RUN_SHELL" = "1" ] ; then
+  docker container exec -it "$PROJECT_NAME" /bin/bash
+  exit $?
 fi
 
 # Check if the container is already running
@@ -124,7 +136,7 @@ if [ "$(docker network ls | grep devnet)" = "" ] ; then
     echo "`date +"%Y-%m-%d %H:%M:%S"` ($CMD_NAME): container's network created ($NETWORK_NAME)"
 fi
 
-# Runs the container
+# Run the container
 res=$( docker container run -d --rm --tty \
   -v "$PWD:/workspace" --network devnet \
   --name "$PROJECT_NAME" "$DEV_OS_IMAGE" )
